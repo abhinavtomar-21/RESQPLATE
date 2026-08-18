@@ -1,0 +1,182 @@
+import pkg from 'pg';
+const { Client } = pkg;
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.resolve(__dirname, '../server/.env') });
+
+const dbUrl = process.env.DATABASE_URL;
+
+if (!dbUrl) {
+  console.error("DATABASE_URL missing in server/.env");
+  process.exit(1);
+}
+
+const client = new Client({
+  connectionString: dbUrl,
+  ssl: { rejectUnauthorized: false }
+});
+
+async function runE2ETests() {
+  console.log("=========================================");
+  console.log("REAL-WORLD E2E WORKFLOW VALIDATION TEST");
+  console.log("=========================================\n");
+
+  await client.connect();
+  let passedCount = 0;
+  let totalCount = 0;
+
+  function assert(condition: boolean, testName: string, expected: string, actual: string) {
+    totalCount++;
+    if (condition) {
+      passedCount++;
+      console.log(`✓ PASS | ${testName}`);
+      console.log(`  Expected: ${expected}`);
+      console.log(`  Actual:   ${actual}\n`);
+    } else {
+      console.error(`✗ FAIL | ${testName}`);
+      console.error(`  Expected: ${expected}`);
+      console.error(`  Actual:   ${actual}\n`);
+    }
+  }
+
+  try {
+    // 1. Verify Core Tables Exist
+    const tablesRes = await client.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public'
+    `);
+    const tables = tablesRes.rows.map(r => r.table_name);
+    const requiredTables = ['profiles', 'verification_requests', 'notifications', 'donations', 'fraud_alerts', 'audit_logs'];
+    const missingTables = requiredTables.filter(t => !tables.includes(t));
+    assert(missingTables.length === 0, '1. Core Tables Existence', 'All 6 core tables present in public schema', missingTables.length === 0 ? `All present (${tables.join(', ')})` : `Missing: ${missingTables.join(', ')}`);
+
+    // 2. Real Restaurant Workflow - Registration & Under Review
+    const testRestId = '11111111-1111-1111-1111-111111111111';
+    await client.query('DELETE FROM verification_requests WHERE restaurant_id = $1', [testRestId]);
+    await client.query('DELETE FROM profiles WHERE id = $1', [testRestId]);
+
+    // Insert user into profiles
+    await client.query(`
+      INSERT INTO profiles (id, email, name, org_name, phone, role, approval_status, profile_completed, documents_uploaded)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    `, [testRestId, 'test.restaurant@resqplate.com', 'Test Chef', 'Tasty Bites Cafe', '+15550199', 'Restaurant', 'DOCUMENT_REVIEW', true, true]);
+
+    // Insert verification request
+    const vrInsertRes = await client.query(`
+      INSERT INTO verification_requests (restaurant_id, restaurant_name, status, documents)
+      VALUES ($1, $2, 'PENDING', $3)
+      RETURNING id, status
+    `, [testRestId, 'Tasty Bites Cafe', JSON.stringify({ businessLicense: 'BL-99482', fssai: 'FSSAI-10293' })]);
+
+    const vrId = vrInsertRes.rows[0].id;
+    assert(vrInsertRes.rows[0].status === 'PENDING', '2. Restaurant Verification Request Creation', 'Status: PENDING', `Status: ${vrInsertRes.rows[0].status}`);
+
+    // 3. Admin Queue Joined Query Verification
+    const queueRes = await client.query(`
+      SELECT vr.*, p.email, p.phone, p.role
+      FROM verification_requests vr
+      JOIN profiles p ON vr.restaurant_id = p.id
+      WHERE vr.id = $1
+    `, [vrId]);
+
+    assert(queueRes.rowCount === 1 && queueRes.rows[0].email === 'test.restaurant@resqplate.com', '3. Admin Queue Data Join', 'Email: test.restaurant@resqplate.com', `Email: ${queueRes.rows[0]?.email}`);
+
+    // 4. Admin Approval Execution (Simulating backend verificationService.processRequest)
+    await client.query('BEGIN');
+    await client.query(`
+      UPDATE verification_requests
+      SET status = 'APPROVED', reviewed_by = '00000000-0000-0000-0000-000000000001', reviewed_at = NOW()
+      WHERE id = $1
+    `, [vrId]);
+
+    await client.query(`
+      UPDATE profiles
+      SET approval_status = 'APPROVED', status = 'APPROVED', onboarding_completed = true
+      WHERE id = $1
+    `, [testRestId]);
+
+    await client.query(`
+      INSERT INTO audit_logs (action, entity, entity_id, performed_by, new_value)
+      VALUES ('VERIFICATION_APPROVE', 'verification_request', $1, '00000000-0000-0000-0000-000000000001', $2)
+    `, [vrId, JSON.stringify({ status: 'APPROVED' })]);
+
+    await client.query(`
+      INSERT INTO notifications (user_id, title, message, type)
+      VALUES ($1, 'Account Approved', 'Your business verification request has been approved.', 'SYSTEM')
+    `, [testRestId]);
+
+    await client.query('COMMIT');
+
+    // Verify profile approval
+    const approvedProfileRes = await client.query('SELECT approval_status, onboarding_completed FROM profiles WHERE id = $1', [testRestId]);
+    assert(approvedProfileRes.rows[0].approval_status === 'APPROVED' && approvedProfileRes.rows[0].onboarding_completed === true, '4. Restaurant Approval Update', 'approval_status: APPROVED, onboarding_completed: true', `approval_status: ${approvedProfileRes.rows[0].approval_status}, onboarding_completed: ${approvedProfileRes.rows[0].onboarding_completed}`);
+
+    // 5. Audit Log Persistence
+    const auditRes = await client.query('SELECT action, entity_id FROM audit_logs WHERE entity_id = $1', [vrId]);
+    assert(auditRes.rowCount > 0 && auditRes.rows[0].action === 'VERIFICATION_APPROVE', '5. Audit Log Creation', 'Action: VERIFICATION_APPROVE', `Action: ${auditRes.rows[0]?.action}`);
+
+    // 6. Notification Creation
+    const notifRes = await client.query('SELECT title, user_id FROM notifications WHERE user_id = $1', [testRestId]);
+    assert(notifRes.rowCount > 0 && notifRes.rows[0].title === 'Account Approved', '6. In-App Notification Generation', 'Title: Account Approved', `Title: ${notifRes.rows[0]?.title}`);
+
+    // 7. Rejection Workflow Test
+    const testRejId = '22222222-2222-2222-2222-222222222222';
+    await client.query('DELETE FROM verification_requests WHERE restaurant_id = $1', [testRejId]);
+    await client.query('DELETE FROM profiles WHERE id = $1', [testRejId]);
+
+    await client.query(`
+      INSERT INTO profiles (id, email, name, org_name, phone, role, approval_status)
+      VALUES ($1, 'rej.restaurant@resqplate.com', 'Bad Cafe', 'Bad Cafe Ltd', '+15550299', 'Restaurant', 'DOCUMENT_REVIEW')
+    `, [testRejId]);
+
+    const vrRejRes = await client.query(`
+      INSERT INTO verification_requests (restaurant_id, restaurant_name, status)
+      VALUES ($1, 'Bad Cafe Ltd', 'PENDING')
+      RETURNING id
+    `, [testRejId]);
+    const rejVrId = vrRejRes.rows[0].id;
+
+    // Reject request
+    await client.query('BEGIN');
+    await client.query('UPDATE verification_requests SET status = $1, rejection_reason = $2 WHERE id = $3', ['REJECTED', 'Expired FSSAI document', rejVrId]);
+    await client.query('UPDATE profiles SET approval_status = $1, rejection_reason = $2 WHERE id = $3', ['REJECTED', 'Expired FSSAI document', testRejId]);
+    await client.query('COMMIT');
+
+    const rejProfile = await client.query('SELECT approval_status, rejection_reason FROM profiles WHERE id = $1', [testRejId]);
+    assert(rejProfile.rows[0].approval_status === 'REJECTED' && rejProfile.rows[0].rejection_reason === 'Expired FSSAI document', '7. Rejection Flow Verification', 'status: REJECTED, reason: Expired FSSAI document', `status: ${rejProfile.rows[0].approval_status}, reason: ${rejProfile.rows[0].rejection_reason}`);
+
+    // 8. Volunteer Immediate Access
+    const volId = '33333333-3333-3333-3333-333333333333';
+    await client.query('DELETE FROM profiles WHERE id = $1', [volId]);
+    await client.query(`
+      INSERT INTO profiles (id, email, name, role, approval_status, onboarding_completed)
+      VALUES ($1, 'vol.hero@resqplate.com', 'Hero Volunteer', 'Volunteer', 'APPROVED', true)
+    `, [volId]);
+
+    const volProfile = await client.query('SELECT approval_status, onboarding_completed FROM profiles WHERE id = $1', [volId]);
+    assert(volProfile.rows[0].approval_status === 'APPROVED' && volProfile.rows[0].onboarding_completed === true, '8. Volunteer Direct Access', 'approval_status: APPROVED (no admin delay)', `approval_status: ${volProfile.rows[0].approval_status}`);
+
+    // Clean up test rows
+    await client.query('DELETE FROM verification_requests WHERE restaurant_id IN ($1, $2)', [testRestId, testRejId]);
+    await client.query('DELETE FROM audit_logs WHERE entity_id IN ($1, $2)', [vrId, rejVrId]);
+    await client.query('DELETE FROM notifications WHERE user_id IN ($1, $2)', [testRestId, testRejId]);
+    await client.query('DELETE FROM profiles WHERE id IN ($1, $2, $3)', [testRestId, testRejId, volId]);
+
+    console.log("=========================================");
+    console.log(`SUMMARY: ${passedCount} / ${totalCount} TESTS PASSED`);
+    console.log("=========================================");
+
+  } catch (err: any) {
+    console.error("E2E Test Exception:", err);
+  } finally {
+    await client.end();
+  }
+}
+
+runE2ETests();

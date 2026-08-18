@@ -1,0 +1,52 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String
+  role         String   // RESTAURANT, NGO, VOLUNTEER, ADMIN
+  fssaiLicense String?
+  city         String?
+  trustScore   Int      @default(90)
+  createdAt    DateTime @default(now())
+
+  donations    Donation[] @relation("DonorDonations")
+  ngoPickups   Donation[] @relation("NgoPickups")
+}
+
+model Donation {
+  id             String   @id @default(uuid())
+  food           String
+  kg             String
+  meals          Int
+  status         String   @default("Pending") // Pending, In Transit, Delivered
+  score          Int      @default(85)
+  time           String
+  donorId        String?
+  donor          User?    @relation("DonorDonations", fields: [donorId], references: [id])
+  ngoId          String?
+  ngoUser        User?    @relation("NgoPickups", fields: [ngoId], references: [id])
+  ngoName        String?
+  volunteerName  String?
+  temperature    String?
+  allergens      String?
+  qrCode         String?
+  createdAt      DateTime @default(now())
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  type      String
+  title     String
+  msg       String
+  time      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

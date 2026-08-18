@@ -1,0 +1,1 @@
+const { Client } = require("pg"); require("dotenv").config(); const client = new Client({ connectionString: process.env.DATABASE_URL }); async function run() { await client.connect(); const { rows } = await client.query("SELECT prosrc FROM pg_proc WHERE proname = $$handle_new_user$$"); console.log(rows[0].prosrc); await client.end(); } run().catch(console.error);
