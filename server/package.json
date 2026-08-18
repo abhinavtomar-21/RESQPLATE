@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "prestart": "tsx scripts/env_check.ts",
     "start": "node dist/index.js",
+    "start:direct": "tsx src/index.ts",
     "lint": "tsc --noEmit",
     "check-deps": "npm audit && npm outdated",
     "test": "echo \"No tests specified yet\" && exit 0"
