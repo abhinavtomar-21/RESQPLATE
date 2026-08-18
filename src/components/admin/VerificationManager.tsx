@@ -44,6 +44,10 @@ export interface VerificationQueueItem {
   more_docs_notes?: string;
 }
 
+const BACKEND_URL = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')
+  ? 'https://resqplate-jbdy.onrender.com'
+  : 'http://localhost:5000';
+
 export const VerificationManager: React.FC = () => {
   const [queue, setQueue] = useState<VerificationQueueItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +63,7 @@ export const VerificationManager: React.FC = () => {
   const fetchQueue = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/admin/verifications');
+      const res = await fetch(`${BACKEND_URL}/api/admin/verifications`);
       const data = await res.json();
       if (data.success && data.queue) {
         setQueue(data.queue);
@@ -77,7 +81,7 @@ export const VerificationManager: React.FC = () => {
 
   const handleApprove = async (item: VerificationQueueItem) => {
     try {
-      const res = await fetch('http://localhost:5000/api/admin/verifications/approve', {
+      const res = await fetch(`${BACKEND_URL}/api/admin/verifications/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: item.id, adminId: 'SuperAdmin_01' })
@@ -97,7 +101,7 @@ export const VerificationManager: React.FC = () => {
   const handleConfirmReject = async () => {
     if (!rejectItem) return;
     try {
-      await fetch('http://localhost:5000/api/admin/verifications/reject', {
+      await fetch(`${BACKEND_URL}/api/admin/verifications/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: rejectItem.id, rejectionReason })
@@ -117,7 +121,7 @@ export const VerificationManager: React.FC = () => {
   const handleConfirmRequestMoreDocs = async () => {
     if (!requestMoreDocsItem) return;
     try {
-      await fetch('http://localhost:5000/api/admin/verifications/request-more-docs', {
+      await fetch(`${BACKEND_URL}/api/admin/verifications/request-more-docs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: requestMoreDocsItem.id, notes: moreDocsNotes })
@@ -137,7 +141,7 @@ export const VerificationManager: React.FC = () => {
   const handleSuspend = async (item: VerificationQueueItem) => {
     if (!window.confirm(`Are you sure you want to suspend '${item.name}'?`)) return;
     try {
-      await fetch('http://localhost:5000/api/admin/verifications/suspend', {
+      await fetch(`${BACKEND_URL}/api/admin/verifications/suspend`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: item.id })
@@ -151,7 +155,7 @@ export const VerificationManager: React.FC = () => {
   const handleDelete = async (item: VerificationQueueItem) => {
     if (!window.confirm(`Permanently delete account '${item.name}'?`)) return;
     try {
-      await fetch(`http://localhost:5000/api/admin/verifications/${item.id}`, { method: 'DELETE' });
+      await fetch(`${BACKEND_URL}/api/admin/verifications/${item.id}`, { method: 'DELETE' });
       setQueue(prev => prev.filter(q => q.id !== item.id));
     } catch (e) {
       setQueue(prev => prev.filter(q => q.id !== item.id));

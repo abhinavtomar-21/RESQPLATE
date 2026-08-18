@@ -40,7 +40,9 @@ export interface NotificationData {
   read: boolean;
 }
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')
+  ? 'https://resqplate-jbdy.onrender.com/api'
+  : 'http://localhost:5000/api';
 
 // Initial Seed Store
 const DEFAULT_DEMO_DONATIONS: DonationData[] = [
