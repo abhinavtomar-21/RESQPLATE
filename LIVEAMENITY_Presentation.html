@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LIVEAMENITY — Academic Presentation Deck</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide-static@0.321.0/font/lucide.min.css">
+  <style>
+    :root {
+      --bg: #0b1120;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --primary: #3b82f6;
+      --cyan: #06b6d4;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation Bar */
+    header {
+      height: 60px;
+      padding: 0 2rem;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--primary);
+    }
+
+    .badge {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid var(--primary);
+      color: var(--cyan);
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    button {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background: #2563eb;
+      border-color: #3b82f6;
+    }
+
+    /* Slide Deck Container */
+    .deck-container {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: calc(100vh - 110px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 2rem;
+    }
+
+    .slide {
+      display: none;
+      width: 100%;
+      max-width: 1300px;
+      height: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 2.5rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      flex-direction: column;
+      justify-content: space-between;
+      animation: fadeIn 0.3s ease-in-out;
+      position: relative;
+      overflow-y: auto;
+    }
+
+    .slide.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.98); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .slide-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .slide-category {
+      color: var(--cyan);
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+
+    .slide-title {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .slide-body {
+      flex: 1;
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    /* Grid Layout Helpers */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; width: 100%; }
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem; width: 100%; }
+    .col-flex { display: flex; flex-direction: column; gap: 1rem; width: 100%; }
+
+    .card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .card.highlight {
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.08);
+    }
+
+    .card.success {
+      border-color: var(--green);
+      background: rgba(16, 185, 129, 0.08);
+    }
+
+    .card.warning {
+      border-color: var(--amber);
+      background: rgba(245, 158, 11, 0.08);
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    ul.bullet-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    ul.bullet-list li {
+      position: relative;
+      padding-left: 1.25rem;
+      font-size: 0.95rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    ul.bullet-list li::before {
+      content: "•";
+      color: var(--cyan);
+      font-weight: bold;
+      position: absolute;
+      left: 0;
+    }
+
+    .stat-badge {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--green);
+    }
+
+    /* Speaker Notes Drawer */
+    .notes-drawer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #090d16;
+      border-top: 2px solid var(--amber);
+      padding: 1rem 2rem;
+      color: #fef08a;
+      font-size: 0.95rem;
+      display: none;
+      z-index: 200;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .notes-drawer.open {
+      display: block;
+    }
+
+    /* Bottom Control Footer */
+    footer {
+      height: 50px;
+      padding: 0 2rem;
+      background: rgba(15, 23, 42, 0.9);
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .progress-bar-container {
+      flex: 1;
+      max-width: 400px;
+      height: 6px;
+      background: var(--card-border);
+      border-radius: 9999px;
+      overflow: hidden;
+      margin: 0 1rem;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: var(--primary);
+      width: 5.5%;
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="brand">
+      <span>⚡ LIVEAMENITY</span>
+      <span class="badge">Academic Presentation</span>
+    </div>
+    <div class="controls">
+      <button onclick="toggleNotes()">🎙️ Speaker Notes [N]</button>
+      <button onclick="toggleFullscreen()">🖥️ Fullscreen [F]</button>
+    </div>
+  </header>
+
+  <!-- Slide Deck Container -->
+  <div class="deck-container">
+
+    <!-- SLIDE 1: Title -->
+    <div class="slide active" data-notes="Good morning Respected Professor and panel members. Today I am presenting LiveAmenity: an Intelligent Shared-Amenity Management & Optimization Platform. Rather than building a traditional booking portal, LiveAmenity introduces an intelligence layer designed to observe real-time occupancy, predict crowd patterns, recommend optimal facilities based on user intent, and optimize facility usage across organizations.">
+      <div class="col-flex" style="justify-content: center; height: 100%; text-align: center; align-items: center;">
+        <div class="badge" style="font-size: 1rem; padding: 6px 16px;">ACADEMIC PROJECT PRESENTATION</div>
+        <h1 style="font-size: 3.5rem; font-weight: 900; color: var(--primary); margin: 1rem 0 0.5rem 0;">LIVEAMENITY</h1>
+        <h2 style="font-size: 1.6rem; color: var(--text); font-weight: 600;">Intelligent Shared-Amenity Management & Optimization Platform</h2>
+        <p style="font-size: 1.2rem; color: var(--cyan); font-weight: 700; margin-top: 1rem;">OBSERVE &nbsp;➔&nbsp; PREDICT &nbsp;➔&nbsp; RECOMMEND &nbsp;➔&nbsp; OPTIMIZE</p>
+        
+        <div class="grid-3" style="margin-top: 2.5rem; max-width: 900px;">
+          <div class="card"><span style="color: var(--amber);">Presenter:</span> <strong>[Student Name]</strong></div>
+          <div class="card"><span style="color: var(--amber);">Reg. No:</span> <strong>[Register Number]</strong></div>
+          <div class="card"><span style="color: var(--amber);">Guide:</span> <strong>[Faculty Name]</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: Motivation -->
+    <div class="slide" data-notes="Sir, the reason we selected this problem is that shared amenities exist everywhere around us in residential societies, university campuses, and office buildings. However, users are forced to make decisions blindly without knowing actual crowd levels or future availability. This leads to decision fatigue for users and severe peak-hour congestion for organizations.">
+      <div class="slide-header">
+        <div class="slide-category">SLIDE 02 // PROJECT MOTIVATION</div>
+        <div class="slide-title">Why Did We Choose This Problem?</div>
+      </div>
+      <div class="slide-body grid-2">
+        <div class="card">
+          <div class="card-title" style="color: var(--cyan);">Everyday Shared Facility Reality</div>
+          <ul class="bullet-list">
+            <li>Shared facilities are ubiquitous across Housing Societies, Colleges, and Tech Parks.</li>
+            <li>Amenities include Gyms, Swimming Pools, Badminton Courts, Study Rooms & Conference Halls.</li>
+            <li>Facilities exist, but access and usage remain uncoordinated.</li>
+            <li>Users frequently encounter sudden overcrowding or wasted trips.</li>
+            <li><strong>Core Observation:</strong> The challenge is NOT just facility availability—it is deciding <em>which</em> facility to use, <em>when</em> to go, and finding <em>better alternatives</em>.</li>
+          </ul>
+        </div>
+        <div class="card warning" style="justify-content: center; text-align: center;">
+          <div class="card-title" style="color: var(--amber); justify-content: center;">The User Decision Dilemma</div>
+          <div style="font-size: 1.2rem; margin: 1.5rem 0; line-height: 2;">
+            🏋️ GYM (Crowded?) <br>
+            🏊 POOL &nbsp; ── &nbsp; 👤 CONFUSED USER &nbsp; ── &nbsp; 🏸 BADMINTON <br>
+            📚 STUDY (Full?)
+          </div>
+          <p style="color: var(--red); font-weight: 700;">TOO MANY CHOICES + LIMITED REAL-TIME INFO = DECISION FATIGUE</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: Current Workflow -->
+    <div class="slide" data-notes="In current platforms, the workflow is entirely static. The system simply lists facilities and lets users click 'Book'. But traditional systems don't know real-time occupancy or crowd dynamics. They provide raw information, forcing the user to manually guess whether a facility is actually usable.">
+      <div class="slide-header">
+        <div class="slide-category">SLIDE 03 // EXISTING LANDSCAPE</div>
+        <div class="slide-title">How Shared Facilities Are Currently Managed</div>
+      </div>
+      <div class="slide-body col-flex">
+        <div class="card highlight" style="text-align: center;">
+          <div class="card-title" style="color: var(--primary); justify-content: center;">TRADITIONAL SYSTEM WORKFLOW</div>
+          <p style="font-size: 1.2rem; font-weight: 700; color: var(--text); margin-top: 0.5rem;">
+            USER &nbsp;➔&nbsp; LOGIN &nbsp;➔&nbsp; VIEW LISTING &nbsp;➔&nbsp; CHECK STATIC AVAILABILITY &nbsp;➔&nbsp; BOOK SLOT &nbsp;➔&nbsp; VISIT &nbsp;➔&nbsp; USE
+          </p>
+        </div>
+        <div class="grid-2">
+          <div class="card success">
+            <div class="card-title" style="color: var(--green);">What Traditional Systems Know ✅</div>
+            <ul class="bullet-list">
+              <li>Facility exists in database</li>
+              <li>Static operating hours & slots</li>
+              <li>Basic booking record created</li>
+              <li>User registration details</li>
+            </ul>
+          </div>
+          <div class="card" style="border-color: var(--red); background: rgba(239, 68, 68, 0.08);">
+            <div class="card-title" style="color: var(--red);">What Traditional Systems DO NOT Answer ❌</div>
+            <ul class="bullet-list">
+              <li>Is the facility overcrowded right now?</li>
+              <li>Will it become overcrowded by the time I arrive?</li>
+              <li>Is there a better alternative nearby?</li>
+              <li>What happens if users book but never show up?</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Bottlenecks -->
+    <div class="slide" data-notes="Sir, the breakdown occurs on both sides. Users experience decision fatigue and arrival frustration when facilities are unexpectedly packed. Meanwhile, organization administrators suffer from severe peak-hour bottlenecks and underutilized facilities because they lack real-time insights to balance demand.">
+      <div class="slide-header">
+        <div class="slide-category">SLIDE 04 // GAP ANALYSIS</div>
+        <div class="slide-title">Where Does The Existing Process Break Down?</div>
+      </div>
+      <div class="slide-body grid-2">
+        <div class="card warning">
+          <div class="card-title" style="color: var(--amber);">👨‍💻 USER BOTTLENECKS</div>
+          <ul class="bullet-list">
+            <li><strong>Manual Comparison:</strong> Users search amenities manually one by one.</li>
+            <li><strong>Static Availability Illusion:</strong> Slot shows "Available" even if 50 people are inside.</li>
+            <li><strong>No Crowd Prediction:</strong> Zero visibility into future crowd spikes.</li>
+            <li><strong>No-Show Wasted Bookings:</strong> Slots locked by missing users.</li>
+          </ul>
+        </div>
+        <div class="card highlight">
+          <div class="card-title" style="color: var(--cyan);">🏢 ORGANIZATION BOTTLENECKS</div>
+          <ul class="bullet-list">
+            <li><strong>Peak-Hour Congestion:</strong> Severe overcrowding while other facilities sit empty.</li>
+            <li><strong>Uneven Utilization:</strong> Gym at 100%, Yoga room at 10%.</li>
+            <li><strong>Unmonitored No-Shows:</strong> No mechanism to detect or release ghost bookings.</li>
+            <li><strong>Historical Reporting Only:</strong> No active control tools during peak hours.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: Dual Problem -->
+    <div class="slide" data-notes="We have framed the problem as a dual challenge: the User Decision Problem ('What should I use right now?') and the Organization Optimization Problem ('How do we balance facility usage?'). LiveAmenity acts as the bridge connecting user intent with organization capacity.">
+      <div class="slide-header">
+        <div class="slide-category">SLIDE 05 // CORE PROBLEM STATEMENT</div>
+        <div class="slide-title">The Dual Problem Statement</div>
+      </div>
+      <div class="slide-body grid-2">
+        <div class="card highlight">
+          <div class="card-title" style="color: var(--cyan);">1. THE USER DECISION PROBLEM</div>
+          <p style="font-size: 1.2rem; font-weight: 700; color: var(--amber); margin: 1rem 0;">
+            “Which facility should I use right now for my specific activity, given current crowd, travel time, and future congestion?”
+          </p>
+          <ul class="bullet-list">
+            <li>Personal efficiency & minimal wait time</li>
+            <li>Elimination of trial-and-error visits</li>
+          </ul>
+        </div>
+        <div class="card success">
+          <div class="card-title" style="color: var(--green);">2. THE ORGANIZATION OPTIMIZATION PROBLEM</div>
+          <p style="font-size: 1.2rem; font-weight: 700; color: var(--amber); margin: 1rem 0;">
+            “How can we distribute amenity demand dynamically to maximize utilization and eliminate congestion?”
+          </p>
+          <ul class="bullet-list">
+            <li>Infrastructure efficiency & demand smoothing</li>
+            <li>Real-time visibility & active operational control</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6: Paradigm Shift -->
+    <div class="slide" data-notes="This slide represents our core technical vision. Traditional systems start and end with booking. LiveAmenity shifts the paradigm to intelligent decision-making: starting from user intent, predicting crowd trajectories, and delivering smart recommendations.">
+      <div class="slide-header">
+        <div class="slide-category">SLIDE 06 // VISION & CONCEPT</div>
+        <div class="slide-title">From Booking To Intelligent Decision-Making</div>
+      </div>
+      <div class="slide-body grid-2">
+        <div class="card">
+          <div class="card-title" style="color: var(--muted);">TRADITIONAL MODEL</div>
+          <p style="font-size: 1.1rem; text-align: center; line-height: 2; margin-top: 1rem; color: var(--red);">
+            FACILITY LISTING <br> ⬇️ <br> STATIC AVAILABILITY <br> ⬇️ <br> MANUAL BOOKING <br> ⬇️ <br> UNKNOWN CROWD VISIT
+          </p>
+        </div>
+        <div class="card highlight">
+          <div class="card-title" style="color: var(--cyan);">LIVEAMENITY INTELLIGENCE MODEL</div>
+          <p style="font-size: 1.1rem; text-align: center; line-height: 2; margin-top: 1rem; color: var(--green); font-weight: 700;">
+            USER INTENT ➔ UNDERSTAND OCCUPANCY <br> ⬇️ <br> PREDICT FUTURE CROWD DYNAMICS <br> ⬇️ <br> RECOMMEND OPTIMAL FACILITY <br> ⬇️ <br> SMART ACTION & FEEDBACK
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: Solution Definition -->
+    <div class="slide" data-notes="Here we formally define LiveAmenity. It is a multi-tenant platform serving three primary components: the end-users who discover and check-in, the intelligence engine performing real-time analytics and predictions, and the admin dashboard for organization management.">
+      <div class="slide-header">
+        <div class="slide-category">SLIDE 07 // SYSTEM DEFINITION</div>
+        <div class="slide-title">What Is LiveAmenity?</div>
+      </div>
+      <div class="slide-body col-flex">
+        <div class="card highlight">
+          <p style="font-size: 1.25rem; font-weight: 700; color: var(--text); line-height: 1.6;">
+            LiveAmenity is a <strong>Multi-Tenant Intelligent Shared-Amenity Platform</strong> that helps organizations manage shared facilities while using real-time occupancy tracking, predictive crowd analytics, and personalized intent recommendations to improve user decisions and facility utilization.
+          </p>
+        </div>
+        <div class="grid-3">
+          <div class="card"><div class="card-title" style="color: var(--primary);">👥 USERS</div><ul class="bullet-list"><li>Express activity intent</li><li>View live occupancy</li><li>Get smart suggestions</li></ul></div>
+          <div class="card"><div class="card-title" style="color: var(--cyan);">⚙️ INTELLIGENCE</div><ul class="bullet-list"><li>Atomic QR counters</li><li>Time-series prediction</li><li>Intent matching matrix</li></ul></div>
+          <div class="card"><div class="card-title" style="color: var(--green);">📊 ADMIN</div><ul class="bullet-list"><li>Live Demand Radar</li><li>Facility capacity rules</li><li>Utilization analytics</li></ul></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8: Real Scenario -->
+    <div class="slide" data-notes="To understand the user experience, consider this scenario: A student says 'I have 40 minutes before dinner.' Instead of checking 5 facility schedules manually, LiveAmenity evaluates activity intent, live occupancy, travel time, and crowd trends, recommending Badminton Court 2 instantly.">
+      <div class="slide-header">
+        <div class="slide-category">SLIDE 08 // USER EXPERIENCE</div>
+        <div class="slide-title">Real-Life User Scenario: Ask ➔ Recommend ➔ Act</div>
+      </div>
+      <div class="slide-body col-flex">
+        <div class="card warning">
+          <div class="card-title" style="color: var(--amber);">🗣️ USER PROMPT / INTENT STATEMENT</div>
+          <p style="font-size: 1.4rem; font-weight: 800; color: var(--text);">
+            “I have 40 minutes before dinner and I want to get a light workout or play a quick game.”
+          </p>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title" style="color: var(--cyan);">🔍 System Real-Time Evaluation</div>
+            <ul class="bullet-list">
+              <li><strong>Activity Match:</strong> Cardio / Racquet / Gym</li>
+              <li><strong>Current Occupancy:</strong> Gym 88%, Badminton 42%, Pool 75%</li>
+              <li><strong>Predicted Crowd (+20 min):</strong> Gym 96% (Rising)</li>
+              <li><strong>Distance:</strong> Badminton Court 4 mins away</li>
+            </ul>
+          </div>
+          <div class="card success">
+            <div class="card-title" style="color: var(--green);">💡 System Recommendation Output</div>
+            <p style="font-size: 1.2rem; font-weight: 800; color: var(--text); margin-top: 0.5rem;">🥇 BEST OPTION: Badminton Court 2</p>
+            <p style="color: var(--muted); font-size: 0.95rem;">• Occupancy: 42% (Low) | Travel: 4 mins<br>• Reasoning: Gym is 88% full and rising. Badminton offers immediate access.</p>
+            <p style="font-size: 1.05rem; font-weight: 700; color: var(--cyan); margin-top: 0.75rem;">🥈 ALTERNATIVE: Outdoor Yoga Deck (28% occupied)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 9: 4-Layer Engine -->
+    <div class="slide" data-notes="The core system architecture revolves around four continuous intelligence layers: Understand (live occupancy), Predict (crowd trends), Recommend (matching user intent), and Optimize (balancing infrastructure demand across the organization).">
+      <div class="slide-header">
+        <div class="slide-category">SLIDE 09 // INTELLIGENCE ARCHITECTURE</div>
+        <div class="slide-title">The 4-Layer Intelligence Framework</div>
+      </div>
+      <div class="slide-body grid-4">
+        <div class="card highlight"><div class="card-title" style="color: var(--primary);">1. UNDERSTAND</div><p style="font-style: italic; color: var(--muted);">What is happening?</p><ul class="bullet-list"><li>Real-Time Occupancy</li><li>Active Check-ins</li><li>Capacity Limits</li></ul></div>
+        <div class="card"><div class="card-title" style="color: var(--cyan);">2. PREDICT</div><p style="font-style: italic; color: var(--muted);">What happens next?</p><ul class="bullet-list"><li>Crowd Spike Models</li><li>Historical Trends</li><li>No-Show Risk Scores</li></ul></div>
+        <div class="card success"><div class="card-title" style="color: var(--green);">3. RECOMMEND</div><p style="font-style: italic; color: var(--muted);">What to choose?</p><ul class="bullet-list"><li>Intent Matching</li><li>Smart Alternatives</li><li>Time/Distance Weighing</li></ul></div>
+        <div class="card warning"><div class="card-title" style="color: var(--amber);">4. OPTIMIZE</div><p style="font-style: italic; color: var(--muted);">How to balance?</p><ul class="bullet-list"><li>Demand Redistribution</li><li>Congestion Reduction</li><li>Facility Health Index</li></ul></div>
+      </div>
+    </div>
+
+    <!-- SLIDE 10: QR & Live Occupancy -->
+    <div class="slide" data-notes="How do we get real-time occupancy data? Through verified QR check-in and check-out events. Scanning a QR code triggers an atomic update in Redis, synchronizing live occupancy. In future phases, this can easily integrate with IoT sensors or turnstiles.">
+      <div class="slide-header">
+        <div class="slide-category">SLIDE 10 // OPERATIONAL DATA</div>
+        <div class="slide-title">Real-Time Occupancy & Smart QR Tracking</div>
+      </div>
+      <div class="slide-body grid-2">
+        <div class="card success">
+          <div class="card-title" style="color: var(--green);">🏋️ MAIN CAMPUS GYM</div>
+          <div class="stat-badge">18 / 25 Occupied (72%) — 🟢 LIVE</div>
+          <ul class="bullet-list" style="margin-top: 1rem;">
+            <li>1. User arrives & scans location QR code</li>
+            <li>2. System validates booking & authorization</li>
+            <li>3. Atomic counter incremented in Redis</li>
+            <li>4. Exit scan / auto-timeout decrements counter</li>
+          </ul>
+        </div>
+        <div class="card highlight">
+          <div class="card-title" style="color: var(--cyan);">⚡ Sensor Integration (Future Scope)</div>
+          <ul class="bullet-list">
+            <li>Turnstile / RFID Gate Access Logs</li>
+            <li>IoT Infrared Counter Sensors at entry/exit</li>
+            <li>Computer Vision / Camera Occupancy Counting</li>
+            <li>Wi-Fi Access Point Density Analytics</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 11: Prediction & Demand -->
+    <div class="slide" data-notes="Predictive analytics looks ahead 15 to 30 minutes based on historical usage and active bookings. By warning users of upcoming crowd spikes and suggesting alternatives, LiveAmenity naturally distributes user demand across all available amenities.">
+      <div class="slide-header">
+        <div class="slide-category">SLIDE 11 // PREDICTIVE CONTROL</div>
+        <div class="slide-title">Predictive Occupancy & Demand Smoothing</div>
+      </div>
+      <div class="slide-body col-flex">
+        <div class="card highlight" style="text-align: center;">
+          <div class="card-title" style="color: var(--cyan); justify-content: center;">📈 TIME-SERIES CROWD FORECAST TRAJECTORY</div>
+          <p style="font-size: 1.4rem; font-weight: 800; color: var(--amber); margin-top: 0.5rem;">
+            NOW (72% Occupied) &nbsp;➔&nbsp; +15 MIN (84% Occupied) &nbsp;➔&nbsp; +30 MIN (96% CONGESTED)
+          </p>
+        </div>
+        <div class="grid-2">
+          <div class="card" style="border-color: var(--red);">
+            <div class="card-title" style="color: var(--red);">Unbalanced Demand (Before)</div>
+            <ul class="bullet-list">
+              <li>Gym: 96% (Overcrowded)</li>
+              <li>Badminton: 91% (Near Capacity)</li>
+              <li>Yoga Lawn: 22% (Underutilized)</li>
+            </ul>
+          </div>
+          <div class="card success">
+            <div class="card-title" style="color: var(--green);">Balanced Demand (After LiveAmenity)</div>
+            <ul class="bullet-list">
+              <li>Gym: 70% (Optimal)</li>
+              <li>Badminton: 65% (Comfortable)</li>
+              <li>Yoga Lawn: 58% (Active Usage)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 12: System Architecture -->
+    <div class="slide" data-notes="This diagram shows the complete multi-tiered system architecture. Clients interact through Web and Mobile apps, secured by Clerk and RBAC. The API gateway routes requests to domain services, backed by our Intelligence Layer and PostgreSQL/Redis storage.">
+      <div class="slide-header">
+        <div class="slide-category">SLIDE 12 // TECHNICAL ARCHITECTURE</div>
+        <div class="slide-title">Complete End-to-End System Architecture</div>
+      </div>
+      <div class="slide-body col-flex" style="gap: 0.75rem;">
+        <div class="card" style="padding: 0.8rem 1.2rem;"><strong style="color: var(--primary);">CLIENT LAYER:</strong> User Web/Mobile App &nbsp;|&nbsp; Admin Dashboard &nbsp;|&nbsp; Super Admin Portal</div>
+        <div class="card" style="padding: 0.8rem 1.2rem;"><strong style="color: var(--cyan);">AUTH & SECURITY:</strong> Clerk Authentication &nbsp;|&nbsp; RBAC Middleware &nbsp;|&nbsp; Org Domain Verifier</div>
+        <div class="card" style="padding: 0.8rem 1.2rem;"><strong style="color: var(--text);">API GATEWAY:</strong> RESTful API Services &nbsp;|&nbsp; Supabase Realtime WebSocket Gateway</div>
+        <div class="card success" style="padding: 0.8rem 1.2rem;"><strong style="color: var(--green);">CORE SERVICES:</strong> Org Service &nbsp;|&nbsp; Facility Service &nbsp;|&nbsp; Booking Engine &nbsp;|&nbsp; Occupancy Counter</div>
+        <div class="card warning" style="padding: 0.8rem 1.2rem;"><strong style="color: var(--amber);">INTELLIGENCE ENGINE:</strong> Time-Series Predictor &nbsp;|&nbsp; Intent Matcher &nbsp;|&nbsp; Demand Redistributor</div>
+        <div class="card" style="padding: 0.8rem 1.2rem;"><strong style="color: var(--primary);">DATA LAYER:</strong> PostgreSQL Relational DB (Supabase) &nbsp;|&nbsp; Redis In-Memory Cache</div>
+      </div>
+    </div>
+
+    <!-- SLIDE 13: Multi-Tenancy -->
+    <div class="slide" data-notes="LiveAmenity is built as a multi-tenant platform. A single deployment serves housing societies, universities, and corporate office parks with strict tenant data isolation, custom booking rules, and organization-specific branding.">
+      <div class="slide-header">
+        <div class="slide-category">SLIDE 13 // DOMAIN ADAPTABILITY</div>
+        <div class="slide-title">One Platform — Multiple Environments (Multi-Tenancy)</div>
+      </div>
+      <div class="slide-body grid-3">
+        <div class="card highlight">
+          <div class="card-title" style="color: var(--primary);">🏡 HOUSING SOCIETIES</div>
+          <ul class="bullet-list">
+            <li><strong>Users:</strong> Residents & Guests</li>
+            <li><strong>Amenities:</strong> Pool, Gym, Clubhouse</li>
+            <li><strong>Focus:</strong> Fair quota rules</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title" style="color: var(--cyan);">🎓 UNIVERSITIES</div>
+          <ul class="bullet-list">
+            <li><strong>Users:</strong> Students & Faculty</li>
+            <li><strong>Amenities:</strong> Sports, Study, Labs</li>
+            <li><strong>Focus:</strong> Exam load management</li>
+          </ul>
+        </div>
+        <div class="card success">
+          <div class="card-title" style="color: var(--green);">🏢 TECH PARKS</div>
+          <ul class="bullet-list">
+            <li><strong>Users:</strong> Employees</li>
+            <li><strong>Amenities:</strong> Workspaces, Gym</li>
+            <li><strong>Focus:</strong> No-show auto-cancel</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 14: Security & Auth -->
+    <div class="slide" data-notes="Security is divided into three distinct pillars: Authentication verifies user identity, Authorization enforces Role-Based Access Control (RBAC), and Organization Verification ensures that multi-tenant organizations are legitimate and verified by Super Admins.">
+      <div class="slide-header">
+        <div class="slide-category">SLIDE 14 // SECURITY ARCHITECTURE</div>
+        <div class="slide-title">Authentication, Authorization & Org Verification</div>
+      </div>
+      <div class="slide-body grid-3">
+        <div class="card highlight">
+          <div class="card-title" style="color: var(--primary);">1. AUTHENTICATION</div>
+          <p style="color: var(--muted);">Who are you?</p>
+          <ul class="bullet-list" style="margin-top: 0.5rem;">
+            <li>Clerk Auth Managed Identity</li>
+            <li>JWT Session Tokens</li>
+            <li>OAuth 2.0 & Magic Links</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title" style="color: var(--cyan);">2. AUTHORIZATION</div>
+          <p style="color: var(--muted);">What can you do?</p>
+          <ul class="bullet-list" style="margin-top: 0.5rem;">
+            <li>Role-Based Access (RBAC)</li>
+            <li>Super Admin / Org Admin / User</li>
+            <li>Row-Level Security (RLS)</li>
+          </ul>
+        </div>
+        <div class="card warning">
+          <div class="card-title" style="color: var(--amber);">3. ORG VERIFICATION</div>
+          <p style="color: var(--muted);">Is org legitimate?</p>
+          <ul class="bullet-list" style="margin-top: 0.5rem;">
+            <li>Self-service Org Sign-up</li>
+            <li>Document Credentials Upload</li>
+            <li>Super Admin Approval Workflow</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 15: Tech Stack -->
+    <div class="slide" data-notes="Our tech stack is chosen for scalability and developer velocity. Next.js handles the front-end, Node.js with TypeScript powers backend services, PostgreSQL stores relational data, and Redis handles atomic live occupancy counters.">
+      <div class="slide-header">
+        <div class="slide-category">SLIDE 15 // TECH IMPLEMENTATION</div>
+        <div class="slide-title">Technology Stack & Technical Rationale</div>
+      </div>
+      <div class="slide-body col-flex">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+          <thead>
+            <tr style="background: rgba(59, 130, 246, 0.2); border-bottom: 2px solid var(--primary);">
+              <th style="padding: 10px; color: var(--cyan);">Layer</th>
+              <th style="padding: 10px; color: var(--cyan);">Technology</th>
+              <th style="padding: 10px; color: var(--cyan);">Technical Rationale</th>
+            </tr>
+          </thead>
+          <tbody style="font-size: 0.95rem; color: var(--text);">
+            <tr style="border-bottom: 1px solid var(--card-border);"><td style="padding: 10px; font-weight: bold;">Frontend</td><td style="padding: 10px; color: var(--primary);">Next.js / React 19 + Tailwind CSS</td><td style="padding: 10px; color: var(--muted);">Server-Side Rendering, fast client routing & modern UI components.</td></tr>
+            <tr style="border-bottom: 1px solid var(--card-border);"><td style="padding: 10px; font-weight: bold;">Backend API</td><td style="padding: 10px; color: var(--primary);">Node.js + Express / TypeScript</td><td style="padding: 10px; color: var(--muted);">Non-blocking async I/O, strict typing, high concurrency throughput.</td></tr>
+            <tr style="border-bottom: 1px solid var(--card-border);"><td style="padding: 10px; font-weight: bold;">Auth</td><td style="padding: 10px; color: var(--primary);">Clerk Authentication</td><td style="padding: 10px; color: var(--muted);">Enterprise identity, pre-built RBAC & multi-tenant session tokens.</td></tr>
+            <tr style="border-bottom: 1px solid var(--card-border);"><td style="padding: 10px; font-weight: bold;">Database</td><td style="padding: 10px; color: var(--primary);">PostgreSQL / Supabase</td><td style="padding: 10px; color: var(--muted);">ACID-compliant relational database for structured bookings.</td></tr>
+            <tr><td style="padding: 10px; font-weight: bold;">Real-Time Cache</td><td style="padding: 10px; color: var(--primary);">Redis + Supabase Realtime</td><td style="padding: 10px; color: var(--muted);">In-memory atomic counters for sub-millisecond occupancy updates.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SLIDE 16: Features -->
+    <div class="slide" data-notes="The feature set is grouped logically into four pillars: User Experience, Facility Management, Intelligence Engine, and Admin Analytics. This structure keeps features cleanly organized by user role and functional area.">
+      <div class="slide-header">
+        <div class="slide-category">SLIDE 16 // SYSTEM CAPABILITIES</div>
+        <div class="slide-title">Four Core Feature Panels</div>
+      </div>
+      <div class="slide-body grid-2">
+        <div class="card highlight"><div class="card-title" style="color: var(--primary);">👨‍💻 USER EXPERIENCE</div><ul class="bullet-list"><li>Activity Intent Search</li><li>Live Occupancy Gauge</li><li>Instant QR Check-In / Out</li></ul></div>
+        <div class="card"><div class="card-title" style="color: var(--cyan);">⚙️ FACILITY MANAGEMENT</div><ul class="bullet-list"><li>Facility Creation & Slots</li><li>Capacity Limits & Hours</li><li>Maintenance Mode Toggles</li></ul></div>
+        <div class="card success"><div class="card-title" style="color: var(--green);">🧠 INTELLIGENCE ENGINE</div><ul class="bullet-list"><li>Crowd Trend Prediction</li><li>Intent Matching Matrix</li><li>No-Show Risk Scoring</li></ul></div>
+        <div class="card warning"><div class="card-title" style="color: var(--amber);">📊 ADMIN ANALYTICS</div><ul class="bullet-list"><li>Live Demand Radar</li><li>Facility Health Index</li><li>Utilization Reports</li></ul></div>
+      </div>
+    </div>
+
+    <!-- SLIDE 17: Impact -->
+    <div class="slide" data-notes="LiveAmenity provides clear benefits to both users and organizations. The primary differentiator is that traditional systems are static and reactive (Manage -> Book -> Report), while LiveAmenity is intelligent and proactive (Observe -> Predict -> Recommend -> Optimize).">
+      <div class="slide-header">
+        <div class="slide-category">SLIDE 17 // VALUE PROPOSITION</div>
+        <div class="slide-title">Benefits, Impact & Differentiation</div>
+      </div>
+      <div class="slide-body col-flex">
+        <div class="grid-2">
+          <div class="card highlight">
+            <div class="card-title" style="color: var(--cyan);">🎯 BENEFIT TO USERS</div>
+            <ul class="bullet-list"><li>Effortless decision-making in seconds</li><li>Elimination of wasted arrival trips</li><li>Smart alternative recommendations</li></ul>
+          </div>
+          <div class="card success">
+            <div class="card-title" style="color: var(--green);">📈 BENEFIT TO ORGANIZATIONS</div>
+            <ul class="bullet-list"><li>Balanced facility utilization</li><li>Reduced peak hour overcrowding</li><li>Automated ghost booking release</li></ul>
+          </div>
+        </div>
+        <div class="card warning" style="text-align: center;">
+          <div class="card-title" style="color: var(--amber); justify-content: center;">SYSTEM DIFFERENTIATION</div>
+          <p style="color: var(--red); font-weight: bold; margin-top: 0.25rem;">TRADITIONAL: MANAGE ➔ BOOK ➔ REPORT (Static & Reactive)</p>
+          <p style="color: var(--green); font-weight: bold; font-size: 1.1rem; margin-top: 0.25rem;">LIVEAMENITY: OBSERVE ➔ PREDICT ➔ RECOMMEND ➔ OPTIMIZE (Intelligent & Proactive)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 18: Conclusion -->
+    <div class="slide" data-notes="In conclusion, LiveAmenity evolves shared facility management from static booking into an intelligent decision layer. Thank you Respected Professor and committee members for your time. I am now open to your questions and feedback.">
+      <div class="slide-header">
+        <div class="slide-category">SLIDE 18 // ROADMAP & CONCLUSION</div>
+        <div class="slide-title">Implementation Roadmap & Conclusion</div>
+      </div>
+      <div class="slide-body grid-2">
+        <div class="card highlight">
+          <div class="card-title" style="color: var(--cyan);">🚀 IMPLEMENTATION ROADMAP</div>
+          <ul class="bullet-list">
+            <li><strong>Phase 1:</strong> Multi-Tenant Core & Auth (Clerk)</li>
+            <li><strong>Phase 2:</strong> Facility CRUD & Booking Engine</li>
+            <li><strong>Phase 3:</strong> QR Check-In & Redis Counters</li>
+            <li><strong>Phase 4:</strong> Intent Recommendation Engine</li>
+            <li><strong>Phase 5:</strong> Admin Demand Radar Dashboard</li>
+            <li><strong>Phase 6 (Future):</strong> ML Crowd Forecasting Model</li>
+          </ul>
+        </div>
+        <div class="card success" style="justify-content: center; text-align: center;">
+          <div class="card-title" style="color: var(--green); justify-content: center;">CONCLUSION</div>
+          <p style="font-size: 1.3rem; font-weight: 800; color: var(--text); margin: 1rem 0;">
+            “LiveAmenity does not simply tell users what is available. It helps them decide what is best.”
+          </p>
+          <p style="color: var(--cyan); font-weight: bold; font-size: 1.1rem;">OBSERVE ➔ PREDICT ➔ RECOMMEND ➔ OPTIMIZE</p>
+          <div style="margin-top: 1.5rem; background: rgba(59,130,246,0.2); padding: 10px; border-radius: 8px; font-weight: bold; color: var(--primary);">
+            THANK YOU! OPEN FOR PROFESSOR FEEDBACK
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Speaker Notes Drawer -->
+  <div id="notesDrawer" class="notes-drawer">
+    <strong style="color: var(--amber);">🎙️ SPEAKER NOTES (Speech Script):</strong>
+    <p id="notesContent" style="margin-top: 0.25rem;"></p>
+  </div>
+
+  <!-- Bottom Controls -->
+  <footer>
+    <div style="display: flex; gap: 0.5rem; align-items: center;">
+      <button onclick="prevSlide()">◀ Previous</button>
+      <button onclick="nextSlide()">Next ▶</button>
+    </div>
+    <div class="progress-bar-container">
+      <div id="progressBar" class="progress-bar"></div>
+    </div>
+    <div style="font-size: 0.9rem; color: var(--muted);">
+      Slide <span id="currentSlideNum" style="color: var(--text); font-weight: bold;">1</span> of <span id="totalSlidesNum">18</span>
+    </div>
+  </footer>
+
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    const currentSlideNum = document.getElementById('currentSlideNum');
+    const totalSlidesNum = document.getElementById('totalSlidesNum');
+    const progressBar = document.getElementById('progressBar');
+    const notesDrawer = document.getElementById('notesDrawer');
+    const notesContent = document.getElementById('notesContent');
+
+    totalSlidesNum.textContent = totalSlides;
+
+    function updateSlide() {
+      slides.forEach((s, idx) => {
+        if (idx === currentSlide) {
+          s.classList.add('active');
+        } else {
+          s.classList.remove('active');
+        }
+      });
+      currentSlideNum.textContent = currentSlide + 1;
+      progressBar.style.width = ((currentSlide + 1) / totalSlides * 100) + '%';
+      
+      const currentNotes = slides[currentSlide].getAttribute('data-notes') || 'No speaker notes available for this slide.';
+      notesContent.textContent = currentNotes;
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        updateSlide();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateSlide();
+      }
+    }
+
+    function toggleNotes() {
+      notesDrawer.classList.toggle('open');
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          alert(`Error attempting to enable full-screen mode: ${err.message}`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'Space' || e.key === 'PageDown') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        prevSlide();
+      } else if (e.key === 'n' || e.key === 'N') {
+        toggleNotes();
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullscreen();
+      }
+    });
+
+    // Initialize
+    updateSlide();
+  </script>
+</body>
+</html>
