@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { C } from '../../constants/theme';
-import { ResQPlateLogo, Btn } from '../shared/SharedComponents';
+import { ZestioLogo, Btn } from '../shared/SharedComponents';
 import { Lock, Mail, ShieldCheck, ArrowRight, ArrowLeft, AlertCircle } from 'lucide-react';
 
 interface AdminPortalProps {
@@ -57,7 +57,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onLoginSuccess, onCanc
         
         {/* Header Logo */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
-          <ResQPlateLogo size={44} />
+          <ZestioLogo size={44} />
         </div>
 
         <div style={{ background: C.white, borderRadius: 28, padding: '40px 36px', boxShadow: '0 12px 48px rgba(46,52,48,0.08)', border: '1px solid rgba(122,143,120,0.18)' }}>
@@ -100,7 +100,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onLoginSuccess, onCanc
                   value={email} 
                   onChange={e => setEmail(e.target.value)} 
                   style={inputStyle} 
-                  placeholder="admin@resqplate.com"
+                  placeholder="admin@Zestio.com"
                 />
               </div>
             </div>

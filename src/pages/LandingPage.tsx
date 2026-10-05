@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { C } from '../constants/theme';
 import { AnimCounter } from '../components/ui/UIComponents';
-import { Btn, Avatar, ResQPlateLogo } from '../components/shared/SharedComponents';
+import { Btn, Avatar, ZestioLogo } from '../components/shared/SharedComponents';
 import { ArrowRight, Star, Leaf, Heart, CheckCircle2, Truck, Cpu, Zap, Navigation, QrCode, BarChart2, Shield, ExternalLink, Share2, Link2 } from 'lucide-react';
 
 export function LandingPage({ onNavigate }: { onNavigate: (v: string) => void }) {
@@ -11,8 +11,8 @@ export function LandingPage({ onNavigate }: { onNavigate: (v: string) => void })
       <nav className="glass" style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: '0 32px', borderBottom: '1px solid rgba(122,143,120,0.12)' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ResQPlateLogo size={30} />
-            <span style={{ fontSize: 17, fontWeight: 800, color: C.charcoal, fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: '-0.02em' }}>ResQPlate</span>
+            <ZestioLogo size={30} />
+            <span style={{ fontSize: 17, fontWeight: 800, color: C.charcoal, fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: '-0.02em' }}>Zestio</span>
           </div>
           <div style={{ display: 'flex', gap: 36 }}>
             {['About', 'Impact', 'Features', 'Contact'].map(link => (
@@ -114,10 +114,10 @@ export function LandingPage({ onNavigate }: { onNavigate: (v: string) => void })
               </div>
             </div>
 
-            {/* ResQPlate circular badge */}
+            {/* Zestio circular badge */}
             <div className="hero-card-2" style={{ position: 'absolute', right: '6%', top: '25%', zIndex: 3, width: 96, height: 96, borderRadius: '50%', background: `linear-gradient(135deg, ${C.forest} 0%, ${C.sage} 100%)`, boxShadow: '0 8px 32px rgba(70,91,74,0.30)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <Leaf size={22} color="white" />
-              <div style={{ fontSize: 7, fontWeight: 800, color: 'white', marginTop: 4, letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.3 }}>ResQPlate<br /><span style={{ fontWeight: 400, opacity: 0.75 }}>Food Rescue</span></div>
+              <div style={{ fontSize: 7, fontWeight: 800, color: 'white', marginTop: 4, letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.3 }}>Zestio<br /><span style={{ fontWeight: 400, opacity: 0.75 }}>Food Rescue</span></div>
             </div>
 
             {/* Notification: 15 meals donated */}
@@ -182,7 +182,7 @@ export function LandingPage({ onNavigate }: { onNavigate: (v: string) => void })
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 64 }}>
             <p style={{ fontSize: 12, fontWeight: 700, color: C.sage, letterSpacing: '0.1em', textTransform: 'uppercase' as const, marginBottom: 12 }}>The Process</p>
-            <h2 style={{ fontSize: 48, fontWeight: 800, color: C.charcoal, letterSpacing: '-0.03em', marginBottom: 16 }}>How ResQPlate Works</h2>
+            <h2 style={{ fontSize: 48, fontWeight: 800, color: C.charcoal, letterSpacing: '-0.03em', marginBottom: 16 }}>How Zestio Works</h2>
             <p style={{ fontSize: 16, color: '#6B7C6E', maxWidth: 460, margin: '0 auto' }}>From surplus to served — in minutes. Powered by AI, driven by humanity.</p>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
@@ -228,7 +228,7 @@ export function LandingPage({ onNavigate }: { onNavigate: (v: string) => void })
             <h2 style={{ fontSize: 48, fontWeight: 800, color: C.charcoal, letterSpacing: '-0.03em' }}>Stories of Impact</h2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
-            {[{ name: 'Chef Arjun Mehta', role: 'Head Chef, The Grand Spice', quote: "ResQPlate turned our biggest guilt — daily food waste — into our greatest pride. We've saved 2,847 meals.", rating: 5 }, { name: 'Dr. Sunita Patel', role: 'Director, Asha Foundation', quote: "The AI matching is extraordinary. We receive exactly what our community needs, and freshness scores give us full confidence.", rating: 5 }, { name: 'Rohan Kumar', role: 'Volunteer, Mumbai', quote: "Being a ResQPlate volunteer changed my life. 47 trips of food to people who genuinely needed it. The app is effortless.", rating: 5 }].map((t, i) => (
+            {[{ name: 'Chef Arjun Mehta', role: 'Head Chef, The Grand Spice', quote: "Zestio turned our biggest guilt — daily food waste — into our greatest pride. We've saved 2,847 meals.", rating: 5 }, { name: 'Dr. Sunita Patel', role: 'Director, Asha Foundation', quote: "The AI matching is extraordinary. We receive exactly what our community needs, and freshness scores give us full confidence.", rating: 5 }, { name: 'Rohan Kumar', role: 'Volunteer, Mumbai', quote: "Being a Zestio volunteer changed my life. 47 trips of food to people who genuinely needed it. The app is effortless.", rating: 5 }].map((t, i) => (
               <div key={i} style={{ background: C.white, borderRadius: 24, padding: 28 }}>
                 <div style={{ display: 'flex', gap: 2, marginBottom: 16 }}>
                   {[...Array(t.rating)].map((_, j) => <Star key={j} size={14} fill={C.warning} color={C.warning} />)}
@@ -255,7 +255,7 @@ export function LandingPage({ onNavigate }: { onNavigate: (v: string) => void })
             <div style={{ position: 'absolute', bottom: -60, left: -60, width: 200, height: 200, borderRadius: '50%', background: 'rgba(122,143,120,0.1)' }} />
             <p style={{ fontSize: 13, fontWeight: 600, color: C.olive, letterSpacing: '0.08em', textTransform: 'uppercase' as const, marginBottom: 16, position: 'relative', zIndex: 1 }}>Join the Movement</p>
             <h2 style={{ fontSize: 52, fontWeight: 800, color: 'white', letterSpacing: '-0.03em', marginBottom: 20, position: 'relative', zIndex: 1 }}>Start Saving Food Today</h2>
-            <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.6)', marginBottom: 40, maxWidth: 460, margin: '0 auto 40px', position: 'relative', zIndex: 1 }}>Whether you're a restaurant, NGO, or volunteer — ResQPlate has a place for you.</p>
+            <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.6)', marginBottom: 40, maxWidth: 460, margin: '0 auto 40px', position: 'relative', zIndex: 1 }}>Whether you're a restaurant, NGO, or volunteer — Zestio has a place for you.</p>
             <div style={{ display: 'flex', gap: 16, justifyContent: 'center', position: 'relative', zIndex: 1 }}>
               <Btn variant="secondary" size="lg" onClick={() => onNavigate('choose')}>Get Started Free <ArrowRight size={16} /></Btn>
             </div>
@@ -268,7 +268,7 @@ export function LandingPage({ onNavigate }: { onNavigate: (v: string) => void })
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 48, marginBottom: 48 }}>
             <div>
-              <ResQPlateLogo size={32} />
+              <ZestioLogo size={32} />
               <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 16, lineHeight: 1.7, maxWidth: 280 }}>AI-powered food rescue ecosystem. Our mission: eliminate food waste while feeding communities in need.</p>
               <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
                 {[ExternalLink, Share2, Link2].map((Icon, i) => (
@@ -286,7 +286,7 @@ export function LandingPage({ onNavigate }: { onNavigate: (v: string) => void })
             ))}
           </div>
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 24, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' as const, gap: 12 }}>
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)' }}>© 2026 ResQPlate Technologies Pvt. Ltd. All rights reserved.</p>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)' }}>© 2026 Zestio Technologies Pvt. Ltd. All rights reserved.</p>
             <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)' }}>Made with ❤️ for a hunger-free world</p>
           </div>
         </div>
@@ -300,7 +300,7 @@ export function RoleChooser({ onChoose, onOpenAdminPortal }: { onChoose: (role: 
     <div style={{ minHeight: '100vh', background: C.ivory, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 32, fontFamily: "'Inter', sans-serif" }}>
       <div className="anim-fadeUp" style={{ maxWidth: 840, width: '100%' }}>
         <div style={{ textAlign: 'center', marginBottom: 44 }}>
-          <ResQPlateLogo size={44} />
+          <ZestioLogo size={44} />
           <h1 style={{ fontSize: 36, fontWeight: 800, color: C.charcoal, marginTop: 24, marginBottom: 10, letterSpacing: '-0.03em', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Who are you joining as?</h1>
           <p style={{ fontSize: 15, color: C.olive, fontWeight: 500 }}>Choose your role to enter your dedicated portal</p>
         </div>

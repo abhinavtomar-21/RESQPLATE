@@ -67,7 +67,7 @@ export function DemoInteractiveExperience() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 12px 24px', borderBottom: `1px solid ${C.beige}` }}>
             <div style={{ width: 34, height: 34, borderRadius: 10, background: C.forest, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 16 }}>R</div>
             <div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: C.charcoal, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>ResQPlate</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: C.charcoal, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Zestio</div>
               <div style={{ fontSize: 11, color: C.forest, fontWeight: 700, letterSpacing: '0.04em' }}>DEMO PLATFORM</div>
             </div>
           </div>
@@ -183,7 +183,7 @@ export function DemoInteractiveExperience() {
                   Welcome back, <span style={{ color: C.olive }}>Demo User</span> 🌿
                 </h1>
                 <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', marginTop: 8, lineHeight: 1.6 }}>
-                  You have saved <strong>{demoMetrics.mealsDistributed.toLocaleString()} meals</strong> and offset <strong>{demoMetrics.co2ReducedTons} tons of CO₂</strong> through the ResQPlate ecosystem.
+                  You have saved <strong>{demoMetrics.mealsDistributed.toLocaleString()} meals</strong> and offset <strong>{demoMetrics.co2ReducedTons} tons of CO₂</strong> through the Zestio ecosystem.
                 </p>
                 <div style={{ marginTop: 24, display: 'flex', gap: 12 }}>
                   <button
@@ -504,7 +504,7 @@ export function DemoInteractiveExperience() {
             <div style={{ background: '#FFF8E7', border: '1px solid #FFE0B2', borderRadius: 16, padding: '14px 20px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
               <AlertCircle size={20} color="#E67E22" />
               <div style={{ fontSize: 12, color: '#B9770E', lineHeight: 1.4 }}>
-                <strong>PROTOTYPE DEMO NOTICE:</strong> The AI food quality assessment below is simulated for product demonstration purposes. It demonstrates ResQPlate's visual inspection workflow and does not replace statutory food safety certification.
+                <strong>PROTOTYPE DEMO NOTICE:</strong> The AI food quality assessment below is simulated for product demonstration purposes. It demonstrates Zestio's visual inspection workflow and does not replace statutory food safety certification.
               </div>
             </div>
 
@@ -989,7 +989,7 @@ export function DemoInteractiveExperience() {
 
               {/* Narrative Story Section */}
               <div style={{ background: C.ivory, padding: 24, borderRadius: 20, border: `1px solid ${C.beige}`, marginBottom: 28 }}>
-                <h4 style={{ fontSize: 16, fontWeight: 800, color: C.charcoal, margin: '0 0 14px' }}>The ResQPlate Impact Model</h4>
+                <h4 style={{ fontSize: 16, fontWeight: 800, color: C.charcoal, margin: '0 0 14px' }}>The Zestio Impact Model</h4>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, textAnchor: 'middle' }}>
                   {[
                     { step: '1. Food Waste', desc: 'Surplus detected at commercial kitchens' },
@@ -1032,7 +1032,7 @@ export function DemoInteractiveExperience() {
               <h2 style={{ fontSize: 24, fontWeight: 800, color: C.charcoal, margin: '0 0 16px' }}>Demo User Profile</h2>
               <div style={{ padding: 20, background: C.ivory, borderRadius: 16, border: `1px solid ${C.beige}` }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: C.charcoal }}>Name: Demo User</div>
-                <div style={{ fontSize: 13, color: C.olive, marginTop: 4 }}>Email: demo@resqplate.demo</div>
+                <div style={{ fontSize: 13, color: C.olive, marginTop: 4 }}>Email: demo@Zestio.demo</div>
                 <div style={{ fontSize: 13, color: C.forest, fontWeight: 600, marginTop: 4 }}>Organization: The Grand Spice Hotel &amp; Restaurant</div>
                 <div style={{ fontSize: 13, color: C.forest, fontWeight: 600, marginTop: 4 }}>Role: Restaurant Owner / Commercial Donor</div>
                 <div style={{ fontSize: 12, color: C.olive, marginTop: 10 }}>FSSAI Registration: #11522001928392 (Verified)</div>

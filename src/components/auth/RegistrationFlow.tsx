@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { C } from '../../constants/theme';
 import { supabase } from '../../lib/supabase';
-import { ResQPlateLogo, Btn } from '../shared/SharedComponents';
+import { ZestioLogo, Btn } from '../shared/SharedComponents';
 import { authService } from '../../services/authService';
 import { 
   ArrowRight, 
@@ -235,7 +235,7 @@ export function RegistrationFlow({
         {/* Header Logo Bar */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 36 }}>
           <div style={{ cursor: 'pointer' }} onClick={onCancel}>
-            <ResQPlateLogo size={44} />
+            <ZestioLogo size={44} />
           </div>
         </div>
 
@@ -463,7 +463,7 @@ export function RegistrationFlow({
                     style={{ width: 18, height: 18, accentColor: C.forest, cursor: 'pointer' }} 
                   />
                   <label htmlFor="terms" style={{ fontSize: 13, color: '#5A6B5C', cursor: 'pointer' }}>
-                    I agree to ResQPlate <span style={{ color: C.forest, fontWeight: 600 }}>Terms of Service</span> & <span style={{ color: C.forest, fontWeight: 600 }}>Privacy Policy</span>
+                    I agree to Zestio <span style={{ color: C.forest, fontWeight: 600 }}>Terms of Service</span> & <span style={{ color: C.forest, fontWeight: 600 }}>Privacy Policy</span>
                   </label>
                 </div>
 
@@ -746,7 +746,7 @@ export function RegistrationFlow({
               </h2>
 
               <p style={{ fontSize: 15, color: '#6B7C6E', lineHeight: 1.6, marginBottom: 24 }}>
-                Thank you for joining ResQPlate. Your compliance documents are under review by our audit team.
+                Thank you for joining Zestio. Your compliance documents are under review by our audit team.
               </p>
 
               <div style={{ background: C.sageLight, borderRadius: 16, padding: '16px 20px', textAlign: 'left', marginBottom: 32 }}>

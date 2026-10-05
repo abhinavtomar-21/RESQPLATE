@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { C } from '../../constants/theme';
-import { ResQPlateLogo, Btn } from '../shared/SharedComponents';
+import { ZestioLogo, Btn } from '../shared/SharedComponents';
 import { Mail, Lock, ArrowRight, X, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/authService';
@@ -80,12 +80,12 @@ export const SignInModal: React.FC<SignInModalProps> = ({ open, onClose, onNavig
 
         {/* Header Logo */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
-          <ResQPlateLogo size={40} />
+          <ZestioLogo size={40} />
         </div>
 
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <h2 style={{ fontSize: 26, fontWeight: 800, color: C.charcoal, letterSpacing: '-0.03em', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            {mode === 'signin' ? 'Sign In to ResQPlate' : 'Reset Password'}
+            {mode === 'signin' ? 'Sign In to Zestio' : 'Reset Password'}
           </h2>
           <p style={{ fontSize: 14, color: '#6B7C6E', marginTop: 4 }}>
             {mode === 'signin' ? 'Enter your credentials to access your account portal' : 'Enter your email to receive a reset link'}
@@ -184,7 +184,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ open, onClose, onNavig
         {/* Footer links */}
         <div style={{ textAlign: 'center', marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(122,143,120,0.12)', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div>
-            <span style={{ fontSize: 14, color: '#6B7C6E' }}>New to ResQPlate? </span>
+            <span style={{ fontSize: 14, color: '#6B7C6E' }}>New to Zestio? </span>
             <button 
               onClick={() => { onClose(); onNavigateToSignUp(); }}
               style={{ background: 'none', border: 'none', color: C.forest, fontWeight: 700, cursor: 'pointer', fontSize: 14 }}

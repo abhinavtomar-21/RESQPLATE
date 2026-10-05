@@ -45,7 +45,7 @@ export interface VerificationQueueItem {
 }
 
 const BACKEND_URL = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')
-  ? 'https://resqplate-jbdy.onrender.com'
+  ? 'https://Zestio-jbdy.onrender.com'
   : 'http://localhost:5000';
 
 export const VerificationManager: React.FC = () => {

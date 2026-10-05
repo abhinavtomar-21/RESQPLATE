@@ -1,14 +1,14 @@
 import React from 'react';
 import { C } from '../../constants/theme';
-import { ResQPlateLogo, Btn } from '../shared/SharedComponents';
+import { ZestioLogo, Btn } from '../shared/SharedComponents';
 import { ShieldCheck, Clock, LogOut, CheckCircle2, AlertOctagon } from 'lucide-react';
 
 export const PendingVerificationScreen: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const handleInstantApprove = () => {
-    const currentUser = JSON.parse(localStorage.getItem('resqplate_auth') || '{}');
+    const currentUser = JSON.parse(localStorage.getItem('Zestio_auth') || '{}');
     if (currentUser && currentUser.user) {
       currentUser.user.status = 'APPROVED';
-      localStorage.setItem('resqplate_auth', JSON.stringify(currentUser));
+      localStorage.setItem('Zestio_auth', JSON.stringify(currentUser));
       window.location.reload();
     } else {
       onLogout();
@@ -20,7 +20,7 @@ export const PendingVerificationScreen: React.FC<{ onLogout: () => void }> = ({ 
       <div className="anim-fadeUp" style={{ maxWidth: 540, width: '100%', background: C.white, borderRadius: 28, padding: '44px 36px', textAlign: 'center', boxShadow: '0 12px 48px rgba(46,52,48,0.08)', border: '1px solid rgba(122,143,120,0.15)' }}>
         
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
-          <ResQPlateLogo size={44} />
+          <ZestioLogo size={44} />
         </div>
 
         <div style={{ width: 68, height: 68, borderRadius: '50%', background: C.sageLight, color: C.forest, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
@@ -68,7 +68,7 @@ export const SuspendedScreen: React.FC<{ onLogout: () => void }> = ({ onLogout }
       <div className="anim-fadeUp" style={{ maxWidth: 540, width: '100%', background: C.white, borderRadius: 28, padding: '44px 36px', textAlign: 'center', boxShadow: '0 12px 48px rgba(46,52,48,0.08)', border: '1px solid #FCA5A5' }}>
         
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
-          <ResQPlateLogo size={44} />
+          <ZestioLogo size={44} />
         </div>
 
         <div style={{ width: 68, height: 68, borderRadius: '50%', background: '#FEE2E2', color: C.danger, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
@@ -98,7 +98,7 @@ export const RejectedScreen: React.FC<{ reason?: string; onLogout: () => void; o
       <div className="anim-fadeUp" style={{ maxWidth: 540, width: '100%', background: C.white, borderRadius: 28, padding: '44px 36px', textAlign: 'center', boxShadow: '0 12px 48px rgba(46,52,48,0.08)', border: '1px solid #FCA5A5' }}>
         
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
-          <ResQPlateLogo size={44} />
+          <ZestioLogo size={44} />
         </div>
 
         <div style={{ width: 68, height: 68, borderRadius: '50%', background: '#FEE2E2', color: C.danger, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
@@ -146,7 +146,7 @@ export const MoreDocsRequestedScreen: React.FC<{ notes?: string; onLogout: () =>
       <div className="anim-fadeUp" style={{ maxWidth: 540, width: '100%', background: C.white, borderRadius: 28, padding: '44px 36px', textAlign: 'center', boxShadow: '0 12px 48px rgba(46,52,48,0.08)', border: '1px solid #C7D2FE' }}>
         
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
-          <ResQPlateLogo size={44} />
+          <ZestioLogo size={44} />
         </div>
 
         <div style={{ width: 68, height: 68, borderRadius: '50%', background: '#E0E7FF', color: '#3730A3', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
