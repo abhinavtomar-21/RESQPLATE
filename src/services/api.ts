@@ -297,12 +297,13 @@ export const ResQApi = {
     }
 
     // 🛑 STRICT REJECTION ON ERROR: Never fabricate food for an image
+    console.warn(`🛑 [AI FRONTEND DEBUG] All endpoint attempts failed. Last error: ${lastErrorMsg}`);
     return {
       isValidFood: false,
       status: 'AI_ERROR',
       detectedObject: 'Analysis Unavailable',
       confidenceScore: 0,
-      reason: 'AI service temporarily unavailable. Please upload a clear image of food to proceed.'
+      reason: `AI service temporarily unavailable (${lastErrorMsg}). Please check connection and try again.`
     };
   },
 

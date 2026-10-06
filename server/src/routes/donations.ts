@@ -115,19 +115,23 @@ CRITICAL RULES:
     try {
       finalPipelineResult = await executeAiPipelineWithRetries(base64Image, mimeType, promptText);
       
-      let cleanJson = finalPipelineResult.content.trim();
-      if (cleanJson.startsWith('```json')) cleanJson = cleanJson.substring(7);
-      if (cleanJson.startsWith('```')) cleanJson = cleanJson.substring(3);
-      if (cleanJson.endsWith('```')) cleanJson = cleanJson.substring(0, cleanJson.length - 3);
-      cleanJson = cleanJson.trim();
+      let rawContent = finalPipelineResult.content.trim();
+      console.log('[AI BACKEND DEBUG] Raw AI Response Length:', rawContent.length);
+
+      const firstBrace = rawContent.indexOf('{');
+      const lastBrace = rawContent.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        rawContent = rawContent.substring(firstBrace, lastBrace + 1);
+      }
       
-      parsedResult = JSON.parse(cleanJson);
+      parsedResult = JSON.parse(rawContent);
+      console.log('[AI BACKEND DEBUG] Parsed AI Result:', { status: parsedResult.status, isFood: parsedResult.isFood, foodName: parsedResult.foodName });
     } catch (error: any) {
-      console.error('⚠️ AI Parsing error:', error.message);
+      console.error('⚠️ [AI BACKEND ERROR] Parsing error:', error.message, 'Raw Content Snippet:', finalPipelineResult?.content?.substring(0, 200));
       return res.status(500).json({
         success: false,
         status: 'AI_ERROR',
-        message: 'AI analysis is temporarily unavailable. Please try again.'
+        message: `AI analysis parsing error: ${error.message}`
       });
     }
 
