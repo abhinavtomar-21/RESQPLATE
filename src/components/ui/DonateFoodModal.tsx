@@ -35,31 +35,60 @@ export function DonateFoodModal({ open, onClose }: { open: boolean; onClose: () 
         const result = await ResQApi.analyzeFoodPhoto(file)
         setAiScanning(false)
         
-        // HARD GATE: Non-Food Rejection
-        if (!result.isValidFood || result.status === 'REJECTED_NON_FOOD') {
+        if (result.status === 'REJECTED_NON_FOOD' || (!result.isValidFood && result.status !== 'AI_ERROR' && result.status !== 'INVALID_IMAGE')) {
+          // 🛑 REJECTED NON-FOOD
           setAiDone(false)
           setAiError({
+            type: 'REJECTED_NON_FOOD',
+            title: 'Image Not Accepted',
             object: result.detectedObject || 'Non-Food Item',
-            confidence: result.confidenceScore || 95,
+            confidence: result.confidenceScore !== undefined && result.confidenceScore !== null ? `${result.confidenceScore}%` : 'Not Available',
             reason: result.reason || 'This image does not appear to contain recognizable food.'
           } as any)
-        } else if (result.isValidFood && result.status === 'VALID_FOOD') {
+        } else if (result.status === 'LOW_CONFIDENCE') {
+          // ⚠️ LOW CONFIDENCE
+          setAiDone(false)
+          setAiError({
+            type: 'LOW_CONFIDENCE',
+            title: 'Low Identification Confidence',
+            object: result.detectedObject || 'Uncertain Subject',
+            confidence: result.confidenceScore !== undefined && result.confidenceScore !== null ? `${result.confidenceScore}%` : 'Low',
+            reason: 'Food presence could not be identified with sufficient confidence. Please upload a clearer image.'
+          } as any)
+        } else if (result.status === 'AI_ERROR') {
+          // 🔌 AI API SERVICE ERROR / TIMEOUT (Separate State — Never show fake 95% confidence)
+          setAiDone(false)
+          setAiError({
+            type: 'AI_ERROR',
+            title: 'AI Analysis Unavailable',
+            object: 'Service Temporarily Unavailable',
+            confidence: 'Not Available',
+            reason: result.reason || 'We could not analyze this image right now due to a network or service issue. Please try again.'
+          } as any)
+        } else if (result.status === 'INVALID_IMAGE') {
+          // 📄 INVALID FILE
+          setAiDone(false)
+          setAiError({
+            type: 'INVALID_IMAGE',
+            title: 'Invalid Image File',
+            object: result.detectedObject || 'Unsupported Format',
+            confidence: 'Not Available',
+            reason: result.reason || 'Please upload a valid JPG, PNG, or WEBP image.'
+          } as any)
+        } else if (result.isValidFood && (result.status === 'VALID_FOOD' || !result.status)) {
+          // 🟢 APPROVED VALID FOOD
           setAiResult(result)
           setAiDone(true)
           setStep(1)
-        } else {
-          setAiError({
-            object: 'Uncertain Image Quality',
-            confidence: 0,
-            reason: result.reason || 'Unable to confidently identify food in this image.'
-          } as any)
         }
       } catch (err: any) {
         setAiScanning(false)
         setAiError({ 
-          object: 'Analysis Unavailable', 
-          confidence: 0, 
-          reason: 'AI service temporarily unavailable. Please upload a clear image of food.' 
+          type: 'AI_ERROR',
+          title: 'AI Analysis Unavailable',
+          object: 'Service Temporarily Unavailable', 
+          confidence: 'Not Available', 
+          reason: 'We could not analyze this image right now. Please check your internet connection and try again.' 
         } as any)
       }
     }
@@ -102,30 +131,26 @@ export function DonateFoodModal({ open, onClose }: { open: boolean; onClose: () 
                 </div>
               ) : aiError ? (
                 <div style={{ cursor: 'default' }} onClick={(e) => e.stopPropagation()}>
-                  <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: C.danger }}>
+                  <div style={{ width: 56, height: 56, borderRadius: '50%', background: (aiError as any).type === 'AI_ERROR' ? '#FEF3C7' : '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: (aiError as any).type === 'AI_ERROR' ? C.warning : C.danger }}>
                     <XCircle size={32} />
                   </div>
-                  <h4 style={{ fontSize: 18, fontWeight: 800, color: C.charcoal, marginBottom: 8 }}>Image Not Accepted</h4>
-                  <p style={{ fontSize: 14, color: C.olive, marginBottom: 16 }}>This image does not appear to contain food.</p>
+                  <h4 style={{ fontSize: 18, fontWeight: 800, color: C.charcoal, marginBottom: 8 }}>{(aiError as any).title || 'Image Not Accepted'}</h4>
+                  <p style={{ fontSize: 14, color: C.olive, marginBottom: 16 }}>{(aiError as any).reason}</p>
                   
-                  <div style={{ background: 'white', borderRadius: 14, padding: '14px 18px', marginBottom: 20, border: '1px solid #FFE4E6', textAlign: 'left' }}>
+                  <div style={{ background: 'white', borderRadius: 14, padding: '14px 18px', marginBottom: 20, border: `1px solid ${(aiError as any).type === 'AI_ERROR' ? C.beige : '#FFE4E6'}`, textAlign: 'left' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                       <span style={{ fontSize: 13, color: C.olive }}>Detected Subject:</span>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: C.charcoal }}>{aiError.object}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: C.charcoal }}>{(aiError as any).object}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: 13, color: C.olive }}>Classification Confidence:</span>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: C.danger }}>{aiError.confidence}%</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: (aiError as any).type === 'AI_ERROR' ? C.olive : C.danger }}>{(aiError as any).confidence}</span>
                     </div>
                   </div>
 
-                  <p style={{ fontSize: 13, color: C.charcoal, marginBottom: 24, lineHeight: 1.5 }}>
-                    Please upload a clear image of the surplus food you want to donate.
-                  </p>
-                  
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
                     <Btn variant="primary" icon={<Upload size={16} />} onClick={(e) => { e.stopPropagation(); setAiError(null); fileInputRef.current?.click(); }}>
-                      Upload Another Image
+                      {(aiError as any).type === 'AI_ERROR' ? 'Try Again' : 'Upload Another Image'}
                     </Btn>
                   </div>
                 </div>

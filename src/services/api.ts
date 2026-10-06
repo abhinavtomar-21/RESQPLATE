@@ -150,7 +150,7 @@ export const ResQApi = {
   // AI Food Analysis Scan (Strict Food Gate & Zero-Hallucination Pipeline)
   async analyzeFoodPhoto(file: File): Promise<{ 
     isValidFood: boolean; 
-    status: 'VALID_FOOD' | 'REJECTED_NON_FOOD' | 'AI_ERROR' | 'INVALID_IMAGE'; 
+    status: 'VALID_FOOD' | 'REJECTED_NON_FOOD' | 'LOW_CONFIDENCE' | 'AI_ERROR' | 'INVALID_IMAGE'; 
     detectedObject?: string; 
     freshnessScore?: number | null; 
     foodType?: string; 
@@ -191,6 +191,16 @@ export const ResQApi = {
       if (res.ok) {
         const data = await res.json();
         
+        if (data.status === 'LOW_CONFIDENCE') {
+          return {
+            isValidFood: false,
+            status: 'LOW_CONFIDENCE',
+            detectedObject: data.detectedObject || 'Uncertain Subject',
+            confidenceScore: data.confidenceScore || 40,
+            reason: data.reason || 'Food presence could not be identified with sufficient confidence.'
+          };
+        }
+
         // Hard Gate Check: Non-Food Rejection
         if (data.isValidFood === false || data.status === 'REJECTED_NON_FOOD') {
           console.log('🛑 [CLIENT GATE] Non-Food Image Rejected by AI:', data);
