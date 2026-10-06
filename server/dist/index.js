@@ -29,23 +29,50 @@ Sentry.init({
     // Set sampling rate for profiling
     profilesSampleRate: 1.0,
 });
-const allowedOrigins = [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    process.env.FRONTEND_URL
-].filter(Boolean);
+const isAllowedOrigin = (origin) => {
+    if (!origin)
+        return true; // Allow non-browser requests
+    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'))
+        return true;
+    if (origin.endsWith('.vercel.app'))
+        return true;
+    if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL)
+        return true;
+    return false;
+};
 app.use(cors({
     origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (isAllowedOrigin(origin)) {
             callback(null, true);
         }
         else {
-            callback(new Error('Not allowed by CORS'));
+            console.warn(`[CORS REJECTED] Origin not allowed: ${origin}`);
+            callback(new Error(`Not allowed by CORS: ${origin}`));
         }
     },
     credentials: true
 }));
 app.use(express.json());
+// Root & /api Health Info Routes (Fixes "Cannot GET /api" in browser)
+app.get('/', (req, res) => {
+    res.json({
+        status: 'online',
+        service: 'ZYVORA Production Engine API',
+        version: '1.0.0',
+        appUrl: 'https://hanumanji.vercel.app'
+    });
+});
+app.get('/api', (req, res) => {
+    res.json({
+        status: 'online',
+        service: 'ZYVORA Engine API Endpoint',
+        endpoints: {
+            health: '/api/health',
+            aiAnalyze: 'POST /api/donations/ai-analyze',
+            donations: '/api/donations'
+        }
+    });
+});
 // Global Rate Limiting
 const globalLimiter = rateLimit({
     windowMs: 60 * 1000, // 1 minute
