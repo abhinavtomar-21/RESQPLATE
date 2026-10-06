@@ -44,55 +44,23 @@ donationsRouter.post('/ai-analyze', upload.single('image'), async (req, res) => 
             });
         }
         console.log(`✅ File attached: ${req.file.originalname} (${req.file.mimetype}, ${Math.round(req.file.size / 1024)}KB)`);
-        const promptText = `You are a strict food classification and quality inspection AI for ZYVORA.
+        const promptText = `You are a strict food classification AI for ZYVORA.
 
-Your FIRST and MOST IMPORTANT task is to determine if the primary subject in the image is EDIBLE FOOD.
+Task 1: Determine if primary subject is EDIBLE FOOD.
+If non-food (person, selfie, car, pet, laptop, phone, empty plate, building, non-edible object), classify as REJECTED_NON_FOOD with foodName = null.
 
-Do NOT assume an image contains food.
+Task 2: If food, return the MOST SPECIFIC RECOGNIZABLE FOOD NAME from visual evidence (e.g., "Chicken Biryani", "Biryani", "Margherita Pizza", "Pizza", "Fried Rice", "Dal", "Roti", "Chapati", "Noodles", "Vegetable Curry", "Paneer Butter Masala", "Samosa", "Dosa", "Idli", "Sandwich", "Burger", "Cake", "Bread", "Salad", "Apples", "Bananas", "Mixed Fruits", "Vegetables", "Milk", "Packaged Food").
+If multiple foods visible, combine: "Rice, Dal and Vegetable Curry".
+Never return generic "Cooked Surplus Meal" if actual food can be identified.
+If exact dish cannot be identified, use broader category ("Rice Dish", "Indian Curry", "Fruit", "Vegetables", "Bakery Item").
+If blurry/dark/unclear: status = "LOW_CONFIDENCE", isFood = false, foodName = null.
 
-If the image contains non-food items (e.g., person, selfie, car, vehicle, pet, animal, laptop, phone, document, screenshot, empty plate, empty container, building, furniture, clothes, landscape, or non-edible object), you MUST classify it as REJECTED_NON_FOOD with foodName = null.
+Return JSON ONLY:
+For Food:
+{"status":"VALID_FOOD","isFood":true,"foodCategory":"cooked_meal","foodName":"Chicken Biryani","foodConfidence":0.95,"reason":"Visible prepared biryani dish with rice and spices.","freshnessScore":90,"freshnessConfidence":0.88,"visualIndicators":["Normal color"],"estimatedShelfLifeHours":4,"limitations":["Visual check only"]}
 
-SPECIFIC FOOD IDENTIFICATION RULES:
-1. When food is present, identify the MOST SPECIFIC RECOGNIZABLE FOOD NAME possible from visual evidence.
-   Examples of specific names: "Chicken Biryani", "Biryani", "Margherita Pizza", "Pizza", "Fried Rice", "Dal", "Roti", "Chapati", "Noodles", "Vegetable Curry", "Paneer Butter Masala", "Samosa", "Dosa", "Idli", "Sandwich", "Burger", "Cake", "Bread", "Salad", "Apples", "Bananas", "Mixed Fruits", "Vegetables", "Milk", "Packaged Food".
-2. If multiple foods are clearly visible (e.g. Rice, Dal, Vegetable Curry), list them: "Rice, Dal and Vegetable Curry".
-3. NEVER return generic placeholder terms like "Cooked Surplus Meal" or "Surplus Meal Batch" when the actual dish/food can be identified.
-4. Do NOT fabricate details that cannot be visually established (e.g., if meat type cannot be visually confirmed, return "Biryani" instead of "Chicken Biryani").
-5. If food is present but the specific dish cannot be identified, return a reasonable category name such as "Rice Dish", "Indian Curry", "Mixed Food", "Fruit", "Vegetables", or "Bakery Item".
-6. If the image is blurry, dark, or ambiguous to classify: set status to "LOW_CONFIDENCE", isFood = false, foodName = null.
-
-Return ONLY a strict JSON object following this exact structure:
-
-For Food Images:
-{
-  "status": "VALID_FOOD",
-  "isFood": true,
-  "foodCategory": "cooked_meal",
-  "foodName": "Chicken Biryani",
-  "foodConfidence": 0.95,
-  "reason": "Visible prepared biryani dish with rice and spices.",
-  "freshnessScore": 90,
-  "freshnessConfidence": 0.88,
-  "visualIndicators": ["Normal color", "No visual spoilage"],
-  "estimatedShelfLifeHours": 4,
-  "limitations": ["Visual analysis cannot confirm microbiological safety."]
-}
-
-For Non-Food Images:
-{
-  "status": "REJECTED_NON_FOOD",
-  "isFood": false,
-  "foodCategory": "non_food",
-  "foodName": null,
-  "detectedObject": "Laptop",
-  "foodConfidence": 0.98,
-  "reason": "The image contains a non-food object and no edible food is detected."
-}
-
-CRITICAL RULES:
-1. Never fabricate weight (kg), servings count, or CO2 savings in the response.
-2. If isFood is false, foodName MUST be null and status MUST be REJECTED_NON_FOOD or LOW_CONFIDENCE.
-3. Return raw JSON only. No markdown formatting.`;
+For Non-Food:
+{"status":"REJECTED_NON_FOOD","isFood":false,"foodCategory":"non_food","foodName":null,"detectedObject":"Laptop","foodConfidence":0.98,"reason":"Non-food object detected."}`;
         const base64Image = req.file.buffer.toString('base64');
         const mimeType = req.file.mimetype;
         let parsedResult = null;

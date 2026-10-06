@@ -133,9 +133,24 @@ async function callGemini(base64Image, mimeType, promptText) {
 }
 // Unified Provider Abstraction with Retry & Validation
 export async function executeAiPipelineWithRetries(base64Image, mimeType, promptText) {
+    // If GEMINI_API_KEY is available, use Gemini Direct API as primary (~1.2s response time)
+    if (process.env.GEMINI_API_KEY) {
+        try {
+            console.log('⚡ Trying Ultra-Fast Direct Gemini API...');
+            aiHealthState.currentProvider = 'Gemini';
+            aiHealthState.currentModel = 'gemini-2.5-flash';
+            const startTime = Date.now();
+            const result = await callGemini(base64Image, mimeType, promptText);
+            const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+            return { ...result, provider: 'Gemini', time: duration };
+        }
+        catch (err) {
+            console.warn('⚠️ Gemini Direct API failed, falling back to OpenRouter:', err.message);
+        }
+    }
     let attempt = 0;
-    const maxRetries = 2;
-    // Try OpenRouter First
+    const maxRetries = 1;
+    // Try OpenRouter First/Fallback
     aiHealthState.currentProvider = 'OpenRouter';
     while (attempt <= maxRetries) {
         try {
