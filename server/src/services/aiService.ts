@@ -20,10 +20,11 @@ let modelFetchTime = 0;
 
 async function getBestFreeVisionModel(): Promise<string> {
   const preferredModels = [
-    'google/gemini-2.0-flash-lite-001:free',
-    'google/gemini-2.0-flash-exp:free',
-    'meta-llama/llama-3.2-11b-vision-instruct:free',
-    'qwen/qwen-2-vl-7b-instruct:free'
+    'dots-studio/dots-3-note-preview:free',
+    'google/gemma-4-26b-a4b-it:free',
+    'google/gemma-4-31b-it:free',
+    'openrouter/free',
+    'google/gemini-2.0-flash-lite-001:free'
   ];
 
   try {
@@ -31,8 +32,8 @@ async function getBestFreeVisionModel(): Promise<string> {
     if (res.ok) {
       const data = await res.json() as any;
       const freeVisionModels = data.data.filter((m: any) => 
-        m.pricing?.prompt === '0' && 
-        m.architecture?.modality?.includes('image')
+        (m.pricing?.prompt === '0' || m.id.endsWith(':free')) && 
+        (m.architecture?.modality?.includes('image') || m.id === 'openrouter/free')
       );
 
       for (const pref of preferredModels) {
@@ -49,7 +50,7 @@ async function getBestFreeVisionModel(): Promise<string> {
     console.warn('⚠️ Could not dynamically fetch OpenRouter models. Using primary vision fallback.');
   }
 
-  return 'google/gemini-2.0-flash-lite-001:free'; 
+  return 'dots-studio/dots-3-note-preview:free'; 
 }
 
 // OpenRouter Call (With Timeout)
@@ -107,7 +108,7 @@ async function callOpenRouter(base64Image: string, mimeType: string, promptText:
 
 // Gemini Call (With Timeout)
 async function callGemini(base64Image: string, mimeType: string, promptText: string): Promise<{content: string, model: string}> {
-  const modelName = 'gemini-2.0-flash';
+  const modelName = 'gemini-2.5-flash';
   
   // Create AbortController manually for SDK if possible, or just wrap in Promise.race
   const timeoutPromise = new Promise<never>((_, reject) => {
@@ -180,7 +181,7 @@ export async function executeAiPipelineWithRetries(base64Image: string, mimeType
   // Fallback to Gemini
   console.log('🔄 Switching to Secondary Provider: Gemini');
   aiHealthState.currentProvider = 'Gemini';
-  aiHealthState.currentModel = 'gemini-2.0-flash';
+  aiHealthState.currentModel = 'gemini-2.5-flash';
   attempt = 0;
 
   while (attempt <= 1) { // 1 retry for fallback

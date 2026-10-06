@@ -15,17 +15,18 @@ let cachedOpenRouterModel = null;
 let modelFetchTime = 0;
 async function getBestFreeVisionModel() {
     const preferredModels = [
-        'google/gemini-2.0-flash-lite-001:free',
-        'google/gemini-2.0-flash-exp:free',
-        'meta-llama/llama-3.2-11b-vision-instruct:free',
-        'qwen/qwen-2-vl-7b-instruct:free'
+        'dots-studio/dots-3-note-preview:free',
+        'google/gemma-4-26b-a4b-it:free',
+        'google/gemma-4-31b-it:free',
+        'openrouter/free',
+        'google/gemini-2.0-flash-lite-001:free'
     ];
     try {
         const res = await fetch('https://openrouter.ai/api/v1/models');
         if (res.ok) {
             const data = await res.json();
-            const freeVisionModels = data.data.filter((m) => m.pricing?.prompt === '0' &&
-                m.architecture?.modality?.includes('image'));
+            const freeVisionModels = data.data.filter((m) => (m.pricing?.prompt === '0' || m.id.endsWith(':free')) &&
+                (m.architecture?.modality?.includes('image') || m.id === 'openrouter/free'));
             for (const pref of preferredModels) {
                 if (freeVisionModels.some((m) => m.id === pref)) {
                     return pref;
@@ -39,7 +40,7 @@ async function getBestFreeVisionModel() {
     catch (error) {
         console.warn('⚠️ Could not dynamically fetch OpenRouter models. Using primary vision fallback.');
     }
-    return 'google/gemini-2.0-flash-lite-001:free';
+    return 'dots-studio/dots-3-note-preview:free';
 }
 // OpenRouter Call (With Timeout)
 async function callOpenRouter(base64Image, mimeType, promptText) {
@@ -91,7 +92,7 @@ async function callOpenRouter(base64Image, mimeType, promptText) {
 }
 // Gemini Call (With Timeout)
 async function callGemini(base64Image, mimeType, promptText) {
-    const modelName = 'gemini-2.0-flash';
+    const modelName = 'gemini-2.5-flash';
     // Create AbortController manually for SDK if possible, or just wrap in Promise.race
     const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Timeout: Gemini API request exceeded 30 seconds')), 30000);
@@ -158,7 +159,7 @@ export async function executeAiPipelineWithRetries(base64Image, mimeType, prompt
     // Fallback to Gemini
     console.log('🔄 Switching to Secondary Provider: Gemini');
     aiHealthState.currentProvider = 'Gemini';
-    aiHealthState.currentModel = 'gemini-2.0-flash';
+    aiHealthState.currentModel = 'gemini-2.5-flash';
     attempt = 0;
     while (attempt <= 1) { // 1 retry for fallback
         try {
