@@ -24,6 +24,10 @@ export function DonateFoodModal({ open, onClose }: { open: boolean; onClose: () 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0]
+      // Reset previous analysis state completely
+      setStep(0)
+      setAiResult(null)
+      setAiDone(false)
       setAiScanning(true)
       setAiError(null)
       
@@ -31,34 +35,32 @@ export function DonateFoodModal({ open, onClose }: { open: boolean; onClose: () 
         const result = await ResQApi.analyzeFoodPhoto(file)
         setAiScanning(false)
         
-        // Strict Validation Check (only trigger non-food error if explicitly detected as inedible car/object with >95% confidence)
-        if (result.isValidFood === false && result.confidenceScore && result.confidenceScore >= 95) {
+        // HARD GATE: Non-Food Rejection
+        if (!result.isValidFood || result.status === 'REJECTED_NON_FOOD') {
+          setAiDone(false)
           setAiError({
-            object: result.detectedObject || 'Inedible Object',
-            confidence: result.confidenceScore || 95
-          })
-        } else {
+            object: result.detectedObject || 'Non-Food Item',
+            confidence: result.confidenceScore || 95,
+            reason: result.reason || 'This image does not appear to contain recognizable food.'
+          } as any)
+        } else if (result.isValidFood && result.status === 'VALID_FOOD') {
           setAiResult(result)
           setAiDone(true)
           setStep(1)
+        } else {
+          setAiError({
+            object: 'Uncertain Image Quality',
+            confidence: 0,
+            reason: result.reason || 'Unable to confidently identify food in this image.'
+          } as any)
         }
-      } catch (err) {
-        console.warn("⚠️ AI Fetch error caught in UI handler. Proceeding with AI fallback result.", err);
+      } catch (err: any) {
         setAiScanning(false)
-        
-        // Safe presentation fallback - guarantee step 1 advancement
-        const fallbackResult = {
-          isValidFood: true,
-          detectedObject: file.name.toLowerCase().includes('biryani') ? 'Chicken Biryani' : file.name.toLowerCase().includes('pizza') ? 'Cheesy Pepperoni Pizza' : 'Surplus Fresh Meal',
-          freshnessScore: 95,
-          foodType: 'Cooked Surplus Food',
-          quantity: '25 kg (100 Servings)',
-          co2Saved: '62.5 kg CO₂e',
-          confidenceScore: 98
-        }
-        setAiResult(fallbackResult)
-        setAiDone(true)
-        setStep(1)
+        setAiError({ 
+          object: 'Analysis Unavailable', 
+          confidence: 0, 
+          reason: 'AI service temporarily unavailable. Please upload a clear image of food.' 
+        } as any)
       }
     }
   }
@@ -91,48 +93,40 @@ export function DonateFoodModal({ open, onClose }: { open: boolean; onClose: () 
         {step === 0 && (
           <div className="anim-fadeUp">
             <input type="file" accept="image/*,video/*" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
-            <div style={{ border: `2px dashed ${C.olive}`, borderRadius: 20, padding: 40, textAlign: 'center', background: C.ivory, cursor: 'pointer', marginBottom: 20 }} onClick={() => fileInputRef.current?.click()}>
+            <div style={{ border: `2px dashed ${C.olive}`, borderRadius: 20, padding: 32, textAlign: 'center', background: C.ivory, cursor: 'pointer', marginBottom: 20 }} onClick={() => fileInputRef.current?.click()}>
               {aiScanning ? (
                 <div>
                   <div style={{ width: 60, height: 60, borderRadius: '50%', border: `4px solid ${C.beige}`, borderTopColor: C.forest, margin: '0 auto 16px', animation: 'spin-slow 1s linear infinite' }} />
-                  <p style={{ color: C.forest, fontWeight: 600 }}>AI Analyzing Food...</p>
-                  <p style={{ color: C.olive, fontSize: 13, marginTop: 8 }}>Detecting freshness, quantity, classification</p>
+                  <p style={{ color: C.forest, fontWeight: 700, fontSize: 16 }}>AI Analyzing Image...</p>
+                  <p style={{ color: C.olive, fontSize: 13, marginTop: 8 }}>Verifying food presence, visual freshness, and classification</p>
                 </div>
               ) : aiError ? (
                 <div style={{ cursor: 'default' }} onClick={(e) => e.stopPropagation()}>
-                  <div style={{ width: 60, height: 60, borderRadius: '50%', background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: C.danger }}>
+                  <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: C.danger }}>
                     <XCircle size={32} />
                   </div>
-                  <h4 style={{ fontSize: 18, fontWeight: 800, color: C.danger, marginBottom: 16 }}>
-                    {aiError.object === 'API Error / Validation Failed' ? 'AI Connection Failed' : 'Food Not Detected'}
-                  </h4>
-                  {aiError.confidence >= 90 ? (
-                    <>
-                      <div style={{ background: 'white', borderRadius: 12, padding: 16, marginBottom: 16, textAlign: 'left', border: `1px solid ${C.beige}` }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                          <span style={{ fontSize: 13, color: C.olive }}>Detected Object:</span>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: C.charcoal }}>{aiError.object}</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span style={{ fontSize: 13, color: C.olive }}>Confidence:</span>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: C.charcoal }}>{aiError.confidence.toFixed(1)}%</span>
-                        </div>
-                      </div>
-                      <p style={{ fontSize: 14, color: C.charcoal, fontWeight: 500, marginBottom: 16 }}>This image does not contain food.</p>
-                      <p style={{ fontSize: 13, color: C.olive, marginBottom: 24 }}>Please upload a clear image of food to continue.</p>
-                    </>
-                  ) : aiError.object === 'API Error / Validation Failed' ? (
-                    <>
-                      <div style={{ background: 'white', borderRadius: 12, padding: 16, marginBottom: 24, textAlign: 'left', border: `1px solid ${C.danger}40` }}>
-                         <p style={{ fontSize: 13, color: C.danger, fontWeight: 700, marginBottom: 8 }}>AI service temporarily unavailable.</p>
-                         <p style={{ fontSize: 12, color: C.charcoal, lineHeight: 1.5 }}>The AI validation system could not process this image due to an upstream provider issue. Please try again later.</p>
-                      </div>
-                    </>
-                  ) : (
-                    <p style={{ fontSize: 14, color: C.charcoal, fontWeight: 500, marginBottom: 24, padding: '0 20px' }}>Unable to determine whether this image contains food. Please upload a clearer image.</p>
-                  )}
+                  <h4 style={{ fontSize: 18, fontWeight: 800, color: C.charcoal, marginBottom: 8 }}>Image Not Accepted</h4>
+                  <p style={{ fontSize: 14, color: C.olive, marginBottom: 16 }}>This image does not appear to contain food.</p>
+                  
+                  <div style={{ background: 'white', borderRadius: 14, padding: '14px 18px', marginBottom: 20, border: '1px solid #FFE4E6', textAlign: 'left' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <span style={{ fontSize: 13, color: C.olive }}>Detected Subject:</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: C.charcoal }}>{aiError.object}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: 13, color: C.olive }}>Classification Confidence:</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: C.danger }}>{aiError.confidence}%</span>
+                    </div>
+                  </div>
+
+                  <p style={{ fontSize: 13, color: C.charcoal, marginBottom: 24, lineHeight: 1.5 }}>
+                    Please upload a clear image of the surplus food you want to donate.
+                  </p>
+                  
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    <Btn variant="primary" onClick={() => { setAiError(null); fileInputRef.current?.click(); }}>Try Again</Btn>
+                    <Btn variant="primary" icon={<Upload size={16} />} onClick={(e) => { e.stopPropagation(); setAiError(null); fileInputRef.current?.click(); }}>
+                      Upload Another Image
+                    </Btn>
                   </div>
                 </div>
               ) : (

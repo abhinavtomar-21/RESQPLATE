@@ -27,175 +27,142 @@ donationsRouter.get('/', async (req, res) => {
   }
 });
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
+
+const FOOD_CONFIDENCE_THRESHOLD = 0.75; // 75% confidence threshold
 
 // POST analyze food with computer vision AI
 donationsRouter.post('/ai-analyze', upload.single('image'), async (req, res) => {
   console.log('\n====================================================');
-  console.log('🖼️  [STAGE 1] Image Upload Received on Backend');
+  console.log('🖼️  [STAGE 1] Food Validation Gate Active');
   
   try {
     if (!req.file) {
-      console.log('❌ Error: No image uploaded in the request.');
       return res.status(400).json({ success: false, message: 'No image uploaded' });
     }
 
-    console.log(`✅ File attached: ${req.file.originalname} (MIME: ${req.file.mimetype}, Size: ${req.file.size} bytes)`);
+    // Supported MIME check
+    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic'];
+    if (!allowedMimeTypes.includes(req.file.mimetype.toLowerCase())) {
+      return res.status(400).json({ 
+        success: false, 
+        status: 'INVALID_IMAGE',
+        message: 'Unsupported image format. Please upload JPG, PNG, or WEBP.' 
+      });
+    }
+
+    console.log(`✅ File attached: ${req.file.originalname} (${req.file.mimetype}, ${Math.round(req.file.size / 1024)}KB)`);
     
-    const promptText = `You are a professional food inspection AI.
+    const promptText = `You are a strict food classification and quality inspection AI for ZYVORA.
 
-Analyze ONLY the uploaded image.
+Your FIRST and MOST IMPORTANT task is to determine if the primary subject in the image is EDIBLE FOOD.
 
-First determine whether the primary object is edible food.
+Do NOT assume an image contains food.
 
-If the image contains food:
-Return structured JSON like:
+If the image contains non-food items (e.g., person, selfie, car, vehicle, pet, animal, laptop, phone, document, screenshot, empty plate, empty container, building, furniture, clothes, landscape, or non-edible object), you MUST classify it as NON_FOOD.
+
+Return ONLY a strict JSON object following this exact structure:
+
+For Food Images:
 {
-  "containsFood": true,
-  "foodName": "Margherita Pizza",
-  "vegNonVeg": "Vegetarian",
-  "freshnessScore": 96,
-  "ingredients": [],
-  "quantity": "",
-  "packaging": "",
-  "detectionConfidence": 98,
-  "qualityConfidence": 99,
-  "packagingConfidence": 85,
-  "reasoning": [
-    "Detected round dough base with tomato sauce",
-    "Visible melted cheese and basil"
-  ],
-  "freshnessReasoning": "No visible discoloration, steam detected."
+  "status": "VALID_FOOD",
+  "isFood": true,
+  "foodCategory": "cooked_meal",
+  "foodName": "Vegetable Biryani",
+  "foodConfidence": 0.95,
+  "reason": "Visible prepared food is clearly present.",
+  "freshnessScore": 90,
+  "freshnessConfidence": 0.88,
+  "visualIndicators": ["Normal color", "No visual spoilage"],
+  "estimatedShelfLifeHours": 4,
+  "limitations": ["Visual analysis cannot confirm microbiological safety."]
 }
 
-If the image contains anything else (e.g. Car, Bike, Person, Laptop, Shoe):
-Return structured JSON like:
+For Non-Food Images:
 {
-  "containsFood": false,
-  "detectedObject": "Sports Car",
-  "detectionConfidence": 99,
-  "reasoning": ["Metallic exterior", "Wheels detected", "Inedible object"]
+  "status": "REJECTED_NON_FOOD",
+  "isFood": false,
+  "foodCategory": "non_food",
+  "foodName": null,
+  "detectedObject": "Car / Person / Laptop",
+  "foodConfidence": 0.98,
+  "reason": "The image contains a non-food object and no edible food is detected."
 }
 
-Never guess. Never hallucinate.
-Return JSON only.`;
+CRITICAL RULES:
+1. Never fabricate weight (kg), servings count, or CO2 savings in the response.
+2. If isFood is false, foodName MUST be null and status MUST be REJECTED_NON_FOOD.
+3. Return raw JSON only. No markdown formatting.`;
 
     const base64Image = req.file.buffer.toString('base64');
     const mimeType = req.file.mimetype;
     
-    // Strict Validation Loop
-    let parsedResult = null;
-    let maxParseRetries = 2;
-    let parseAttempt = 0;
-    let finalPipelineResult = null;
+    let parsedResult: any = null;
+    let finalPipelineResult: any = null;
 
-    while (parseAttempt <= maxParseRetries) {
-        try {
-            finalPipelineResult = await executeAiPipelineWithRetries(base64Image, mimeType, promptText);
-            
-            let cleanJson = finalPipelineResult.content.trim();
-            if (cleanJson.startsWith('```json')) cleanJson = cleanJson.substring(7);
-            if (cleanJson.startsWith('```')) cleanJson = cleanJson.substring(3);
-            if (cleanJson.endsWith('```')) cleanJson = cleanJson.substring(0, cleanJson.length - 3);
-            cleanJson = cleanJson.trim();
-            
-            parsedResult = JSON.parse(cleanJson);
-            
-            if (parsedResult.containsFood !== undefined) {
-               parsedResult.isValidFood = parsedResult.containsFood;
-            }
-            if (parsedResult.foodName && !parsedResult.detectedObject) {
-               parsedResult.detectedObject = parsedResult.foodName;
-            }
-            if (parsedResult.freshness && !parsedResult.freshnessScore) {
-               parsedResult.freshnessScore = parsedResult.freshness;
-            }
-
-            break; // Success! Break out of the validation loop.
-        } catch (error: any) {
-            console.error(`⚠️ JSON Validation or Pipeline Failed (Attempt ${parseAttempt}):`, error.message);
-            invalidateModelCache(); // Invalidate cache if model produces garbage
-            parseAttempt++;
-            if (parseAttempt > maxParseRetries) {
-                // If it's a structural pipeline failure, we throw
-                if (error.message.includes('All providers failed')) {
-                     throw error;
-                }
-                throw new Error('AI returned invalid JSON multiple times.');
-            }
-        }
-    }
-
-    if (!parsedResult || !finalPipelineResult) {
-         throw new Error('Unexpected empty result after pipeline.');
-    }
-
-    console.log('✅ [STAGE 3] Final Validated JSON Result:');
-    console.log(JSON.stringify(parsedResult, null, 2));
-
-    // LOGGING REQUIREMENT
-    console.log('\n📊 [AI Analytics Log]');
-    console.log(`Provider   : ${finalPipelineResult.provider}`);
-    console.log(`Model      : ${finalPipelineResult.model}`);
-    console.log(`Time       : ${finalPipelineResult.time} sec`);
-    console.log(`Confidence : ${parsedResult.confidenceScore}%`);
-    console.log('----------------------------------------------------');
-
-    // STRICT VALIDATION ENFORCEMENT: Override if confidence < 90
-    if (parsedResult.isValidFood && parsedResult.confidenceScore < 90) {
-      console.log('⚠️ Warning: Confidence is below 90%. Overriding isValidFood to false.');
-      parsedResult.isValidFood = false;
-    }
-
-    // Process Human Checklist
-    let humanChecklist = null;
-    let riskAssessment = null;
     try {
-      if (req.body.checklist) {
-         humanChecklist = JSON.parse(req.body.checklist);
-      } else {
-         // simulated checklist if frontend hasn't sent one yet
-         humanChecklist = {
-            preparationDate: new Date().toISOString(),
-            preparationTime: "Unknown",
-            storageMethod: "Room Temperature",
-            temperature: "Unknown",
-            timeAtRoomTempMinutes: 0,
-            isSealed: false,
-            ingredients: [],
-            allergens: [],
-            dietary: { vegetarian: false, vegan: false },
-            previouslyServed: false,
-            signsOfContamination: false
-         };
-      }
+      finalPipelineResult = await executeAiPipelineWithRetries(base64Image, mimeType, promptText);
       
-      const donorTrustScore = 85; // simulated trust score
-      if (parsedResult.isValidFood) {
-          riskAssessment = RiskEngine.assessRisk(humanChecklist, parsedResult, donorTrustScore);
-          eventBus.emit(Events.RISK_CALCULATED, { donationId: 'TMP-1234', riskAssessment });
-      }
-    } catch (e) {
-      console.warn("Could not parse checklist or assess risk", e);
+      let cleanJson = finalPipelineResult.content.trim();
+      if (cleanJson.startsWith('```json')) cleanJson = cleanJson.substring(7);
+      if (cleanJson.startsWith('```')) cleanJson = cleanJson.substring(3);
+      if (cleanJson.endsWith('```')) cleanJson = cleanJson.substring(0, cleanJson.length - 3);
+      cleanJson = cleanJson.trim();
+      
+      parsedResult = JSON.parse(cleanJson);
+    } catch (error: any) {
+      console.error('⚠️ AI Parsing error:', error.message);
+      return res.status(500).json({
+        success: false,
+        status: 'AI_ERROR',
+        message: 'AI analysis is temporarily unavailable. Please try again.'
+      });
     }
 
-    console.log('📤 [STAGE 5] Sending Final UI Response.');
-    console.log('====================================================\n');
+    // Standardize detection fields
+    const isFood = Boolean(parsedResult.isFood || parsedResult.containsFood);
+    const confidenceRatio = typeof parsedResult.foodConfidence === 'number' ? parsedResult.foodConfidence : (typeof parsedResult.detectionConfidence === 'number' ? parsedResult.detectionConfidence / 100 : 0.90);
+    const confidencePct = Math.round(confidenceRatio * 100);
+
+    // 🛑 HARD GATE 1: Check if non-food
+    if (!isFood || confidenceRatio < FOOD_CONFIDENCE_THRESHOLD) {
+      console.log(`🛑 [GATE REJECTED] Image is NOT food or confidence below threshold. Confidence: ${confidencePct}%`);
+      return res.json({
+        success: true,
+        status: 'REJECTED_NON_FOOD',
+        isValidFood: false,
+        detectedObject: parsedResult.detectedObject || parsedResult.foodName || 'Non-Food Item',
+        confidenceScore: confidencePct,
+        reason: parsedResult.reason || 'The uploaded image does not appear to contain recognizable food.'
+      });
+    }
+
+    // 🟢 VALID FOOD APPROVED
+    console.log(`🟢 [GATE APPROVED] Valid Food Detected: "${parsedResult.foodName}" (${confidencePct}% confidence)`);
+
+    const freshness = typeof parsedResult.freshnessScore === 'number' ? Math.min(100, Math.max(0, parsedResult.freshnessScore)) : 90;
 
     res.json({
       success: true,
-      ...parsedResult,
-      riskAssessment,
-      verificationChecklist: humanChecklist
+      status: 'VALID_FOOD',
+      isValidFood: true,
+      foodName: parsedResult.foodName || 'Surplus Food Meal',
+      detectedObject: parsedResult.foodName || 'Surplus Food Meal',
+      freshnessScore: freshness,
+      confidenceScore: confidencePct,
+      shelfLifeHours: parsedResult.estimatedShelfLifeHours || 4,
+      visualIndicators: parsedResult.visualIndicators || ["Normal visual appearance", "No obvious spoilage visible"],
+      limitations: parsedResult.limitations || ["Visual analysis cannot confirm microbiological safety."]
     });
   } catch (error: any) {
     console.error('❌ FATAL AI Pipeline Error:', error);
-    
-    // Completely obscure the provider implementation from the frontend
     res.status(500).json({ 
-        success: false, 
-        message: 'AI service temporarily unavailable.', 
-        error: 'Pipeline Error' 
+      success: false, 
+      status: 'AI_ERROR',
+      message: 'AI service temporarily unavailable. Please try again.' 
     });
   }
 });

@@ -8,7 +8,7 @@ export const authenticateUser = async (req, res, next) => {
     if (process.env.DEMO_MODE === 'true' || authHeader === 'Bearer demo-token-123' || !authHeader) {
         req.user = {
             id: 'demo-user-777',
-            email: 'demo@resqplate.demo',
+            email: 'demo@ZYVORA.demo',
             permissionGroup: 'Restaurant Owner',
             role: 'Restaurant',
             status: 'APPROVED',
@@ -27,7 +27,7 @@ export const authenticateUser = async (req, res, next) => {
             // Fallback for Demo Mode testing
             req.user = {
                 id: 'demo-user-777',
-                email: 'demo@resqplate.demo',
+                email: 'demo@ZYVORA.demo',
                 permissionGroup: 'Restaurant Owner',
                 role: 'Restaurant',
                 status: 'APPROVED',

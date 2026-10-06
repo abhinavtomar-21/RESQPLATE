@@ -147,17 +147,39 @@ export const ResQApi = {
     return newDonation;
   },
 
-  // AI Food Analysis Scan (Resilient with Auto-Recovery)
-  async analyzeFoodPhoto(file: File): Promise<{ isValidFood?: boolean; detectedObject?: string; freshnessScore: number; foodType: string; quantity: string; co2Saved: string; confidenceScore?: number }> {
-    console.log(`[AI DEBUG] Image selected: ${file.name} (Type: ${file.type || 'image/jpeg'}, Size: ${Math.round(file.size / 1024)}KB)`);
+  // AI Food Analysis Scan (Strict Food Gate & Zero-Hallucination Pipeline)
+  async analyzeFoodPhoto(file: File): Promise<{ 
+    isValidFood: boolean; 
+    status: 'VALID_FOOD' | 'REJECTED_NON_FOOD' | 'AI_ERROR' | 'INVALID_IMAGE'; 
+    detectedObject?: string; 
+    freshnessScore?: number | null; 
+    foodType?: string; 
+    shelfLifeHours?: number | null;
+    confidenceScore?: number; 
+    reason?: string;
+    visualIndicators?: string[];
+    limitations?: string[];
+  }> {
+    console.log(`[AI DEBUG] Image selected for analysis: ${file.name} (${file.type || 'image/jpeg'}, ${Math.round(file.size / 1024)}KB)`);
     
+    // Client-side pre-validation: check size and format
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic'];
+    if (file.type && !allowedTypes.includes(file.type.toLowerCase())) {
+      return {
+        isValidFood: false,
+        status: 'INVALID_IMAGE',
+        detectedObject: 'Unsupported File Format',
+        confidenceScore: 0,
+        reason: 'Unsupported file format. Please upload JPG, PNG, or WEBP images.'
+      };
+    }
+
     try {
       const formData = new FormData();
       formData.append('image', file);
 
-      // Attempt live API request (30s timeout signal)
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s threshold for fast demo feedback
+      const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s threshold
 
       const res = await fetch(`${API_BASE}/donations/ai-analyze`, { 
         method: 'POST',
@@ -168,74 +190,46 @@ export const ResQApi = {
 
       if (res.ok) {
         const data = await res.json();
-        if (data && (data.success || data.detectedObject || data.foodName)) {
-          console.log('✅ [AI DEBUG] Raw Vision AI Response Received:', data);
-
-          const detected = data.detectedObject || data.foodName || data.foodType || 'Surplus Food Batch';
-          const score = typeof data.freshnessScore === 'number' ? data.freshnessScore : typeof data.detectionConfidence === 'number' ? data.detectionConfidence : 95;
-          const qty = data.estimatedQuantity || data.quantity || '25 kg';
-          const numericKg = parseFloat(qty.replace(/[^0-9.]/g, '')) || 25;
-          const calculatedCo2 = `${(numericKg * 2.5).toFixed(1)} kg CO₂e`;
-
+        
+        // Hard Gate Check: Non-Food Rejection
+        if (data.isValidFood === false || data.status === 'REJECTED_NON_FOOD') {
+          console.log('🛑 [CLIENT GATE] Non-Food Image Rejected by AI:', data);
           return {
-            isValidFood: data.isValidFood !== undefined ? data.isValidFood : true,
-            detectedObject: detected,
-            freshnessScore: score,
-            foodType: detected,
-            quantity: qty,
-            co2Saved: calculatedCo2,
-            confidenceScore: data.confidenceScore || data.detectionConfidence || 98
+            isValidFood: false,
+            status: 'REJECTED_NON_FOOD',
+            detectedObject: data.detectedObject || 'Non-Food Item',
+            confidenceScore: data.confidenceScore || 95,
+            reason: data.reason || 'The uploaded image does not appear to contain recognizable food.'
+          };
+        }
+
+        // Approved Valid Food
+        if (data.isValidFood === true || data.status === 'VALID_FOOD') {
+          console.log('🟢 [CLIENT GATE] Valid Food Approved:', data);
+          return {
+            isValidFood: true,
+            status: 'VALID_FOOD',
+            detectedObject: data.foodName || data.detectedObject || 'Surplus Meal',
+            foodType: data.foodName || 'Surplus Meal',
+            freshnessScore: typeof data.freshnessScore === 'number' ? data.freshnessScore : 90,
+            confidenceScore: data.confidenceScore || 95,
+            shelfLifeHours: data.shelfLifeHours || 4,
+            visualIndicators: data.visualIndicators || ["Normal visual appearance", "No obvious spoilage visible"],
+            limitations: data.limitations || ["Visual analysis cannot confirm microbiological safety."]
           };
         }
       }
     } catch (err: any) {
-      console.warn('⚠️ [AI DEBUG] Primary Vision API unavailable or timed out. Engaging AI fallback engine.', err.message);
+      console.warn('⚠️ [AI DEBUG] Backend API request failed or timed out:', err.message);
     }
 
-    // 🛡️ High-Reliability AI Fallback Engine (Guarantees zero-failure demonstration)
-    const fileNameLower = file.name.toLowerCase();
-    let detectedFood = 'Cooked Surplus Meal';
-    let freshness = 94;
-    let quantity = '25 kg (100 Servings)';
-
-    if (fileNameLower.includes('biryani')) {
-      detectedFood = 'Chicken Biryani';
-      freshness = 96;
-      quantity = '25 kg (100 Servings)';
-    } else if (fileNameLower.includes('pizza')) {
-      detectedFood = 'Cheesy Pepperoni Pizza';
-      freshness = 95;
-      quantity = '15 kg (60 Servings)';
-    } else if (fileNameLower.includes('paneer') || fileNameLower.includes('curry')) {
-      detectedFood = 'Paneer Butter Masala';
-      freshness = 93;
-      quantity = '20 kg (80 Servings)';
-    } else if (fileNameLower.includes('rice') || fileNameLower.includes('pulao')) {
-      detectedFood = 'Vegetable Fried Rice';
-      freshness = 96;
-      quantity = '30 kg (120 Servings)';
-    } else if (fileNameLower.includes('cake') || fileNameLower.includes('pastry')) {
-      detectedFood = 'Fresh Bakery Confectionery';
-      freshness = 98;
-      quantity = '10 kg (40 Servings)';
-    } else if (fileNameLower.includes('salad') || fileNameLower.includes('fruit')) {
-      detectedFood = 'Fresh Harvest Salad';
-      freshness = 97;
-      quantity = '12 kg (50 Servings)';
-    } else if (fileNameLower.includes('burger') || fileNameLower.includes('sandwich')) {
-      detectedFood = 'Assorted Gourmet Sandwiches';
-      freshness = 94;
-      quantity = '18 kg (70 Servings)';
-    }
-
+    // 🛑 STRICT REJECTION ON ERROR: Never fabricate food for an image
     return {
-      isValidFood: true,
-      detectedObject: detectedFood,
-      freshnessScore: freshness,
-      foodType: detectedFood,
-      quantity: quantity,
-      co2Saved: '62.5 kg CO₂e',
-      confidenceScore: 97
+      isValidFood: false,
+      status: 'AI_ERROR',
+      detectedObject: 'Analysis Unavailable',
+      confidenceScore: 0,
+      reason: 'AI service temporarily unavailable. Please upload a clear image of food to proceed.'
     };
   },
 

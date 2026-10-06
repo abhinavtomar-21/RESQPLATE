@@ -56,7 +56,7 @@ async function callOpenRouter(base64Image, mimeType, promptText) {
             headers: {
                 'Authorization': `Bearer ${apiKey}`,
                 'HTTP-Referer': 'http://localhost:3000',
-                'X-Title': 'ResqPlate',
+                'X-Title': 'ZYVORA',
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({

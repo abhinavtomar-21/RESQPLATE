@@ -8,18 +8,18 @@ export const EmailService = {
     sendApprovalEmail: async (email, name = 'User') => {
         try {
             const { data, error } = await resend.emails.send({
-                from: 'ResQPlate <onboarding@resend.dev>', // Resend's default testing domain
+                from: 'ZYVORA <onboarding@resend.dev>', // Resend's default testing domain
                 to: [email],
-                subject: 'Your ResQPlate Account is Approved! 🎉',
+                subject: 'Your ZYVORA Account is Approved! 🎉',
                 html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
             <h2 style="color: #2e7d32;">Great news, ${name}!</h2>
             <p>Your account has been fully verified and approved by our administration team.</p>
             <p>You can now log in to your dashboard and start making an impact immediately.</p>
-            <a href="http://localhost:5173" style="display: inline-block; background-color: #2e7d32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 15px;">Login to ResQPlate</a>
+            <a href="http://localhost:5173" style="display: inline-block; background-color: #2e7d32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 15px;">Login to ZYVORA</a>
             <br/><br/>
             <p>Best regards,</p>
-            <p><strong>The ResQPlate Team</strong></p>
+            <p><strong>The ZYVORA Team</strong></p>
           </div>
         `,
             });

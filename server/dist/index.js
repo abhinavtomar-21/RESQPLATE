@@ -112,5 +112,5 @@ app.use('/api/admin', requireAuth, authorize({ role: ['Administrator'] }), admin
 app.use('/api/notifications', requireAuth, notificationsRouter);
 Sentry.setupExpressErrorHandler(app);
 app.listen(PORT, () => {
-    console.log(`🚀 ResQPlate Backend Engine running on http://localhost:${PORT}`);
+    console.log(`🚀 ZYVORA Backend Engine running on http://localhost:${PORT}`);
 });
