@@ -41,7 +41,7 @@ export interface NotificationData {
 }
 
 const API_BASE = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')
-  ? 'https://ZYVORA-jbdy.onrender.com/api'
+  ? 'https://resqplate-jbdy.onrender.com/api'
   : 'http://localhost:5000/api';
 
 // Initial Seed Store

@@ -50,7 +50,16 @@ Your FIRST and MOST IMPORTANT task is to determine if the primary subject in the
 
 Do NOT assume an image contains food.
 
-If the image contains non-food items (e.g., person, selfie, car, vehicle, pet, animal, laptop, phone, document, screenshot, empty plate, empty container, building, furniture, clothes, landscape, or non-edible object), you MUST classify it as NON_FOOD.
+If the image contains non-food items (e.g., person, selfie, car, vehicle, pet, animal, laptop, phone, document, screenshot, empty plate, empty container, building, furniture, clothes, landscape, or non-edible object), you MUST classify it as REJECTED_NON_FOOD with foodName = null.
+
+SPECIFIC FOOD IDENTIFICATION RULES:
+1. When food is present, identify the MOST SPECIFIC RECOGNIZABLE FOOD NAME possible from visual evidence.
+   Examples of specific names: "Chicken Biryani", "Biryani", "Margherita Pizza", "Pizza", "Fried Rice", "Dal", "Roti", "Chapati", "Noodles", "Vegetable Curry", "Paneer Butter Masala", "Samosa", "Dosa", "Idli", "Sandwich", "Burger", "Cake", "Bread", "Salad", "Apples", "Bananas", "Mixed Fruits", "Vegetables", "Milk", "Packaged Food".
+2. If multiple foods are clearly visible (e.g. Rice, Dal, Vegetable Curry), list them: "Rice, Dal and Vegetable Curry".
+3. NEVER return generic placeholder terms like "Cooked Surplus Meal" or "Surplus Meal Batch" when the actual dish/food can be identified.
+4. Do NOT fabricate details that cannot be visually established (e.g., if meat type cannot be visually confirmed, return "Biryani" instead of "Chicken Biryani").
+5. If food is present but the specific dish cannot be identified, return a reasonable category name such as "Rice Dish", "Indian Curry", "Mixed Food", "Fruit", "Vegetables", or "Bakery Item".
+6. If the image is blurry, dark, or ambiguous to classify: set status to "LOW_CONFIDENCE", isFood = false, foodName = null.
 
 Return ONLY a strict JSON object following this exact structure:
 
@@ -59,9 +68,9 @@ For Food Images:
   "status": "VALID_FOOD",
   "isFood": true,
   "foodCategory": "cooked_meal",
-  "foodName": "Vegetable Biryani",
+  "foodName": "Chicken Biryani",
   "foodConfidence": 0.95,
-  "reason": "Visible prepared food is clearly present.",
+  "reason": "Visible prepared biryani dish with rice and spices.",
   "freshnessScore": 90,
   "freshnessConfidence": 0.88,
   "visualIndicators": ["Normal color", "No visual spoilage"],
@@ -75,14 +84,14 @@ For Non-Food Images:
   "isFood": false,
   "foodCategory": "non_food",
   "foodName": null,
-  "detectedObject": "Car / Person / Laptop",
+  "detectedObject": "Laptop",
   "foodConfidence": 0.98,
   "reason": "The image contains a non-food object and no edible food is detected."
 }
 
 CRITICAL RULES:
 1. Never fabricate weight (kg), servings count, or CO2 savings in the response.
-2. If isFood is false, foodName MUST be null and status MUST be REJECTED_NON_FOOD.
+2. If isFood is false, foodName MUST be null and status MUST be REJECTED_NON_FOOD or LOW_CONFIDENCE.
 3. Return raw JSON only. No markdown formatting.`;
         const base64Image = req.file.buffer.toString('base64');
         const mimeType = req.file.mimetype;
@@ -112,6 +121,19 @@ CRITICAL RULES:
         const isFood = Boolean(parsedResult.isFood || parsedResult.containsFood);
         const confidenceRatio = typeof parsedResult.foodConfidence === 'number' ? parsedResult.foodConfidence : (typeof parsedResult.detectionConfidence === 'number' ? parsedResult.detectionConfidence / 100 : 0.90);
         const confidencePct = Math.round(confidenceRatio * 100);
+        // Check for LOW_CONFIDENCE status from AI response or low threshold
+        if (parsedResult.status === 'LOW_CONFIDENCE' || (isFood && confidenceRatio < 0.50)) {
+            console.log(`⚠️ [GATE LOW CONFIDENCE] Food detection confidence low: ${confidencePct}%`);
+            return res.json({
+                success: true,
+                status: 'LOW_CONFIDENCE',
+                isValidFood: false,
+                foodName: null,
+                detectedObject: parsedResult.detectedObject || 'Uncertain Subject',
+                confidenceScore: confidencePct,
+                reason: parsedResult.reason || 'Food presence could not be identified with sufficient confidence. Please upload a clearer image.'
+            });
+        }
         // 🛑 HARD GATE 1: Check if non-food
         if (!isFood || confidenceRatio < FOOD_CONFIDENCE_THRESHOLD) {
             console.log(`🛑 [GATE REJECTED] Image is NOT food or confidence below threshold. Confidence: ${confidencePct}%`);
@@ -119,7 +141,8 @@ CRITICAL RULES:
                 success: true,
                 status: 'REJECTED_NON_FOOD',
                 isValidFood: false,
-                detectedObject: parsedResult.detectedObject || parsedResult.foodName || 'Non-Food Item',
+                foodName: null,
+                detectedObject: parsedResult.detectedObject || 'Non-Food Item',
                 confidenceScore: confidencePct,
                 reason: parsedResult.reason || 'The uploaded image does not appear to contain recognizable food.'
             });
