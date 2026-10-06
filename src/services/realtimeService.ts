@@ -9,7 +9,7 @@ class RealtimeSyncEngine {
   constructor() {
     if (typeof window !== 'undefined') {
       window.addEventListener('storage', (e) => {
-        if (e.key === 'Zestio_realtime_event' && e.newValue) {
+        if (e.key === 'ZYVORA_realtime_event' && e.newValue) {
           try {
             const payload = JSON.parse(e.newValue);
             this.emitLocal(payload.event, payload.data);
@@ -67,7 +67,7 @@ class RealtimeSyncEngine {
   broadcast(event: string, data: any) {
     this.emitLocal(event, data);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('Zestio_realtime_event', JSON.stringify({
+      localStorage.setItem('ZYVORA_realtime_event', JSON.stringify({
         event,
         data,
         timestamp: Date.now()

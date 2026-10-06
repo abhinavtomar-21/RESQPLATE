@@ -13,7 +13,7 @@ import { VerificationManager } from './components/admin/VerificationManager';
 import { UserManagement } from './components/admin/UserManagement';
 import { AuditLogViewer } from './components/admin/AuditLogViewer';
 import { NotificationPanel } from './components/layout/LayoutComponents';
-import { ZestioLogo } from './components/shared/SharedComponents';
+import { ZYVORALogo } from './components/shared/SharedComponents';
 
 // Pages
 import { LandingPage, RoleChooser, LuxuryFluidWaves } from './pages/LandingPage';
@@ -62,7 +62,7 @@ function AppContent() {
   if (isLoading || (path.startsWith('/auth/') && path !== '/')) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: C.ivory }}>
-        <ZestioLogo size={48} />
+        <ZYVORALogo size={48} />
         <h2 style={{ marginTop: 24, fontSize: 24, color: C.charcoal, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           {path.includes('email-confirmed') ? 'Verifying your email...' : path.includes('reset-password') ? 'Verifying reset link...' : 'Authenticating...'}
         </h2>

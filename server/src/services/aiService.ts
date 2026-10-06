@@ -69,7 +69,7 @@ async function callOpenRouter(base64Image: string, mimeType: string, promptText:
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'HTTP-Referer': 'http://localhost:3000',
-        'X-Title': 'Zestio',
+        'X-Title': 'ZYVORA',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({

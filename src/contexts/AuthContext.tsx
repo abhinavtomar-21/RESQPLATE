@@ -58,7 +58,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           const mappedUser: User = {
             id: profile.id,
             email: profile.email,
-            name: profile.name || profile.org_name || 'Zestio Partner',
+            name: profile.name || profile.org_name || 'ZYVORA Partner',
             permissionGroup: profile.permission_group || 'Restaurant Owner',
             status: profile.approval_status || 'APPROVED',
             mfaVerified: profile.mfa_verified || (profile.role === 'Administrator'),
@@ -82,7 +82,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           const mappedUser: User = {
             id: session.user.id,
             email: session.user.email || '',
-            name: metadata.name || 'ResQ Partner',
+            name: metadata.name || 'ZYVORA Partner',
             permissionGroup: role === 'Restaurant' ? 'Restaurant Owner' : role === 'NGO' ? 'NGO Admin' : role === 'Volunteer' ? 'Volunteer' : 'Super Admin',
             status: approval_status,
             mfaVerified: metadata.mfaVerified ?? (role === 'Administrator'),

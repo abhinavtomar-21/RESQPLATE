@@ -8,7 +8,7 @@ export const IS_DEMO_MODE_CONFIGURED = envDemo !== 'false';
 // Stable Deterministic Demo Accounts for Professor Presentation
 export const DEMO_RESTAURANT_USER: User = {
   id: 'demo-restaurant-101',
-  email: 'restaurant@zestio.demo',
+  email: 'restaurant@ZYVORA.demo',
   name: 'Green Bowl Restaurant',
   permissionGroup: 'Restaurant Owner',
   status: 'APPROVED',
@@ -24,7 +24,7 @@ export const DEMO_RESTAURANT_USER: User = {
 
 export const DEMO_NGO_USER: User = {
   id: 'demo-ngo-202',
-  email: 'ngo@zestio.demo',
+  email: 'ngo@ZYVORA.demo',
   name: 'Hope Foundation',
   permissionGroup: 'NGO Admin',
   status: 'APPROVED',
@@ -40,7 +40,7 @@ export const DEMO_NGO_USER: User = {
 
 export const DEMO_VOLUNTEER_USER: User = {
   id: 'demo-volunteer-303',
-  email: 'volunteer@zestio.demo',
+  email: 'volunteer@ZYVORA.demo',
   name: 'Demo Volunteer',
   permissionGroup: 'Volunteer',
   status: 'APPROVED',
@@ -56,8 +56,8 @@ export const DEMO_VOLUNTEER_USER: User = {
 
 export const DEMO_ADMIN_USER: User = {
   id: 'demo-admin-000',
-  email: 'admin@zestio.demo',
-  name: 'Zestio Admin Overview',
+  email: 'admin@ZYVORA.demo',
+  name: 'ZYVORA Admin Overview',
   permissionGroup: 'Super Admin',
   status: 'APPROVED',
   mfaVerified: true,

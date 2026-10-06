@@ -104,7 +104,7 @@ export function DashLayout({ sidebar, children, onBack }: { sidebar: React.React
               <line x1="58" y1="20" x2="58" y2="30" stroke={C.forest} strokeWidth="2" strokeLinecap="round" />
             </svg>
             <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: 18, color: C.charcoal, letterSpacing: '-0.03em' }}>
-              Zest<span style={{ color: C.forest }}>io</span>
+              ZYVORA
             </div>
           </div>
         </div>

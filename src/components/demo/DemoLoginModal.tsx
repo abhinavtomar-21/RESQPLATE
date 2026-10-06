@@ -1,6 +1,6 @@
 import React from 'react';
 import { C } from '../../constants/theme';
-import { ZestioLogo } from '../shared/SharedComponents';
+import { ZYVORALogo } from '../shared/SharedComponents';
 import { Utensils, Building2, Truck, ArrowRight, ShieldCheck, Sparkles, LogIn } from 'lucide-react';
 import { useDemo } from '../../contexts/DemoContext';
 
@@ -13,8 +13,8 @@ export function DemoLoginModal({ open, onClose }: { open: boolean; onClose?: () 
     {
       type: 'admin' as const,
       roleName: 'ADMINISTRATOR / SUPERVISOR',
-      name: 'Zestio Admin Overview',
-      email: 'admin@zestio.demo',
+      name: 'ZYVORA Admin Overview',
+      email: 'admin@ZYVORA.demo',
       location: 'System Control Center',
       icon: <ShieldCheck size={24} color="#8E44AD" />,
       color: '#8E44AD',
@@ -26,7 +26,7 @@ export function DemoLoginModal({ open, onClose }: { open: boolean; onClose?: () 
       type: 'restaurant' as const,
       roleName: 'RESTAURANT / DONOR',
       name: 'Green Bowl Restaurant',
-      email: 'restaurant@zestio.demo',
+      email: 'restaurant@ZYVORA.demo',
       location: 'Vellore, Main Hall',
       icon: <Utensils size={24} color={C.forest} />,
       color: C.forest,
@@ -38,7 +38,7 @@ export function DemoLoginModal({ open, onClose }: { open: boolean; onClose?: () 
       type: 'ngo' as const,
       roleName: 'NGO / RECEIVER',
       name: 'Hope Foundation',
-      email: 'ngo@zestio.demo',
+      email: 'ngo@ZYVORA.demo',
       location: 'Vellore, Branch 2',
       icon: <Building2 size={24} color={C.olive} />,
       color: C.olive,
@@ -50,7 +50,7 @@ export function DemoLoginModal({ open, onClose }: { open: boolean; onClose?: () 
       type: 'volunteer' as const,
       roleName: 'VOLUNTEER / LOGISTICS',
       name: 'Demo Volunteer',
-      email: 'volunteer@zestio.demo',
+      email: 'volunteer@ZYVORA.demo',
       location: 'Vellore Delivery Zone',
       icon: <Truck size={24} color={C.warning} />,
       color: C.warning,
@@ -89,7 +89,7 @@ export function DemoLoginModal({ open, onClose }: { open: boolean; onClose?: () 
           </div>
           
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
-            <ZestioLogo size={42} />
+            <ZYVORALogo size={42} />
           </div>
 
           <h2 style={{ fontSize: 26, fontWeight: 800, color: C.charcoal, letterSpacing: '-0.02em', margin: 0 }}>

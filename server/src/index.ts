@@ -135,6 +135,6 @@ app.use('/api/notifications', requireAuth, notificationsRouter);
 Sentry.setupExpressErrorHandler(app);
 
 app.listen(PORT, () => {
-  console.log(`🚀 Zestio Backend Engine running on http://localhost:${PORT}`);
+  console.log(`🚀 ZYVORA Backend Engine running on http://localhost:${PORT}`);
 });
 

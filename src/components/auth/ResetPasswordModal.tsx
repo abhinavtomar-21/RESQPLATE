@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { C } from '../../constants/theme';
-import { ZestioLogo, Btn } from '../shared/SharedComponents';
+import { ZYVORALogo, Btn } from '../shared/SharedComponents';
 import { Lock, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { authService } from '../../services/authService';
 
@@ -56,7 +56,7 @@ export const ResetPasswordModal: React.FC<{
       <div className="anim-fadeUp" style={{ background: C.white, borderRadius: 28, maxWidth: 460, width: '100%', padding: '36px 32px', boxShadow: '0 24px 64px rgba(46,52,48,0.2)', border: '1px solid rgba(122,143,120,0.18)' }}>
         
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
-          <ZestioLogo size={40} />
+          <ZYVORALogo size={40} />
         </div>
 
         <div style={{ textAlign: 'center', marginBottom: 28 }}>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { C } from '../../constants/theme';
 
-export function ZestioLogo({ size = 40, showText = true }: { size?: number; showText?: boolean }) {
+export function ZyvoraLogo({ size = 40, showText = true }: { size?: number; showText?: boolean }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
       <svg width={size} height={size} viewBox="0 0 80 80" fill="none">
@@ -26,16 +26,18 @@ export function ZestioLogo({ size = 40, showText = true }: { size?: number; show
       {showText && (
         <div>
           <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: size * 0.45, color: C.charcoal, letterSpacing: '-0.03em', lineHeight: 1 }}>
-            Zest<span style={{ color: C.forest }}>io</span>
+            ZYVORA
           </div>
-          <div style={{ fontSize: size * 0.22, color: C.olive, letterSpacing: '0.08em', textTransform: 'uppercase' as const, fontWeight: 600, marginTop: 2 }}>
-            Rescue Food, Feed Hope
+          <div style={{ fontSize: size * 0.2, color: C.olive, letterSpacing: '0.04em', textTransform: 'uppercase' as const, fontWeight: 600, marginTop: 2 }}>
+            Turning Surplus into Impact.
           </div>
         </div>
       )}
     </div>
   )
 }
+
+export const ZYVORALogo = ZyvoraLogo;
 
 export function Btn({ children, variant = 'primary', onClick, disabled, className = '', icon, size = 'md', style }: {
   children: React.ReactNode; variant?: 'primary' | 'secondary' | 'ghost' | 'danger'; onClick?: (e?: any) => void;
