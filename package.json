@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "vite build && tsc --noEmit",
+    "build": "vite build",
     "preview": "vite preview",
     "format": "oxfmt",
     "lint": "tsc --noEmit",
