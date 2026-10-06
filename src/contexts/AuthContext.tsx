@@ -58,7 +58,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           const mappedUser: User = {
             id: profile.id,
             email: profile.email,
-            name: profile.name || profile.org_name || 'ResQ Partner',
+            name: profile.name || profile.org_name || 'Zestio Partner',
             permissionGroup: profile.permission_group || 'Restaurant Owner',
             status: profile.approval_status || 'APPROVED',
             mfaVerified: profile.mfa_verified || (profile.role === 'Administrator'),

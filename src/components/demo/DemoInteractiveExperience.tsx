@@ -547,7 +547,7 @@ export function DemoInteractiveExperience() {
                     { label: 'Food Category', val: currentDonation.category, sub: 'Standard Cooked Grains & Spices' },
                     { label: 'Estimated Freshness', val: `${currentDonation.freshnessScore}% Fresh`, sub: 'Optimal thermal preservation detected' },
                     { label: 'Safety Status', val: currentDonation.safetyStatus, sub: 'No visual discoloration or spoilage' },
-                    { label: 'Model Confidence', val: `${currentDonation.confidenceScore}% Confidence`, sub: 'ResQ-Vision-V2 Neural Net' }
+                    { label: 'Model Confidence', val: `${currentDonation.confidenceScore}% Confidence`, sub: 'Zestio-Vision-V2 Neural Net' }
                   ].map((row, idx) => (
                     <div key={idx} style={{ padding: '12px 16px', background: C.ivory, borderRadius: 14, border: `1px solid ${C.beige}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>

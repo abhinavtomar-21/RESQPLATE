@@ -254,7 +254,7 @@ export function DonateFoodModal({ open, onClose }: { open: boolean; onClose: () 
             <h3 style={{ fontSize: 22, fontWeight: 800, color: C.charcoal, marginBottom: 8 }}>Donation Submitted!</h3>
             <p style={{ color: C.olive, fontSize: 14, marginBottom: 24 }}>AI matched your food to the best nearby NGO. Volunteer notified.</p>
             <div style={{ background: C.sageLight, borderRadius: 20, padding: 24, marginBottom: 20, display: 'flex', gap: 24, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' as const }}>
-              <QRCode value="D-4822-RESQ" />
+              <QRCode value="D-4822-ZESTIO" />
               <div style={{ textAlign: 'left' }}>
                 {[['Donation ID', 'D-4822'], ['Matched NGO', 'Asha Foundation'], ['Volunteer', 'Rohan Kumar'], ['ETA', '~18 minutes']].map(([l, v]) => (
                   <div key={l} style={{ marginBottom: 12 }}>
