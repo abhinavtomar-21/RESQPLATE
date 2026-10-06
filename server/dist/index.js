@@ -46,8 +46,8 @@ app.use(cors({
             callback(null, true);
         }
         else {
-            console.warn(`[CORS REJECTED] Origin not allowed: ${origin}`);
-            callback(new Error(`Not allowed by CORS: ${origin}`));
+            console.warn(`[CORS UNMATCHED] Origin: ${origin}`);
+            callback(null, false);
         }
     },
     credentials: true
