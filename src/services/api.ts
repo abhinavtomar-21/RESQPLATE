@@ -158,7 +158,8 @@ export const ResQApi = {
     visualIndicators?: string[];
     limitations?: string[];
   }> {
-    console.log(`[AI DEBUG] Image selected for analysis: ${file.name} (${file.type || 'image/jpeg'}, ${Math.round(file.size / 1024)}KB)`);
+    const origSizeKb = Math.round(file.size / 1024);
+    console.log(`[AI PERF] Image selected: ${file.name} (${file.type || 'image/jpeg'}, ${origSizeKb}KB)`);
     
     // Client-side pre-validation: check size and format
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic'];
@@ -170,6 +171,53 @@ export const ResQApi = {
         confidenceScore: 0,
         reason: 'Unsupported file format. Please upload JPG, PNG, or WEBP images.'
       };
+    }
+
+    // Client-Side Image Preprocessing / Compression (Target: max 1280px, ~0.8 JPEG quality)
+    let uploadFile = file;
+    if (typeof window !== 'undefined' && file.size > 300 * 1024) {
+      const compStart = Date.now();
+      try {
+        uploadFile = await new Promise<File>((resolve) => {
+          const img = new Image();
+          const url = URL.createObjectURL(file);
+          img.onload = () => {
+            URL.revokeObjectURL(url);
+            const MAX_DIM = 1280;
+            let width = img.width;
+            let height = img.height;
+            if (width > MAX_DIM || height > MAX_DIM) {
+              if (width > height) {
+                height = Math.round((height * MAX_DIM) / width);
+                width = MAX_DIM;
+              } else {
+                width = Math.round((width * MAX_DIM) / height);
+                height = MAX_DIM;
+              }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return resolve(file);
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob(
+              (blob) => {
+                if (!blob) return resolve(file);
+                const comp = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), { type: 'image/jpeg' });
+                console.log(`[AI PERF] Preprocessing complete: ${origSizeKb}KB -> ${Math.round(comp.size / 1024)}KB in ${Date.now() - compStart}ms (${width}x${height}px)`);
+                resolve(comp);
+              },
+              'image/jpeg',
+              0.80
+            );
+          };
+          img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+          img.src = url;
+        });
+      } catch (e) {
+        uploadFile = file;
+      }
     }
 
     // Determine candidate endpoints: primary API_BASE + fallback production Render URL
@@ -184,7 +232,7 @@ export const ResQApi = {
       console.log(`[AI DEBUG] Sending image request to: ${endpoint}`);
       try {
         const formData = new FormData();
-        formData.append('image', file);
+        formData.append('image', uploadFile);
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 45000); // 45s threshold for cold starts

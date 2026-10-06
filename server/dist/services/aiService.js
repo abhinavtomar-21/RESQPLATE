@@ -11,9 +11,12 @@ export const aiHealthState = {
 // Sleep helper
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 // Dynamic Model Discovery
-let cachedOpenRouterModel = null;
-let modelFetchTime = 0;
+let cachedOpenRouterModel = 'dots-studio/dots-3-note-preview:free';
+let modelFetchTime = Date.now();
 async function getBestFreeVisionModel() {
+    if (cachedOpenRouterModel && (Date.now() - modelFetchTime < 3600000)) {
+        return cachedOpenRouterModel;
+    }
     const preferredModels = [
         'dots-studio/dots-3-note-preview:free',
         'google/gemma-4-26b-a4b-it:free',
@@ -29,18 +32,23 @@ async function getBestFreeVisionModel() {
                 (m.architecture?.modality?.includes('image') || m.id === 'openrouter/free'));
             for (const pref of preferredModels) {
                 if (freeVisionModels.some((m) => m.id === pref)) {
+                    cachedOpenRouterModel = pref;
+                    modelFetchTime = Date.now();
                     return pref;
                 }
             }
             if (freeVisionModels.length > 0) {
-                return freeVisionModels[0].id;
+                cachedOpenRouterModel = freeVisionModels[0].id;
+                modelFetchTime = Date.now();
+                return cachedOpenRouterModel;
             }
         }
     }
     catch (error) {
         console.warn('⚠️ Could not dynamically fetch OpenRouter models. Using primary vision fallback.');
     }
-    return 'dots-studio/dots-3-note-preview:free';
+    cachedOpenRouterModel = 'dots-studio/dots-3-note-preview:free';
+    return cachedOpenRouterModel;
 }
 // OpenRouter Call (With Timeout)
 async function callOpenRouter(base64Image, mimeType, promptText) {
