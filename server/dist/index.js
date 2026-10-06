@@ -102,6 +102,11 @@ import { uploadRouter } from './routes/upload.js';
 // API Routes
 app.use('/api/auth', authLimiter, authRouter);
 app.use('/api/upload', uploadRouter);
+// Public AI Vision endpoint (scans images before creating donation)
+app.post('/api/donations/ai-analyze', (req, res, next) => {
+    req.url = '/ai-analyze';
+    donationsRouter(req, res, next);
+});
 app.use('/api/donations', requireAuth, donationsRouter);
 app.use('/api/users', requireAuth, usersRouter);
 app.use('/api/invitations', requireAuth, invitationsRouter);

@@ -174,63 +174,80 @@ export const ResQApi = {
       };
     }
 
-    try {
-      const formData = new FormData();
-      formData.append('image', file);
+    // Determine candidate endpoints: primary API_BASE + fallback production Render URL
+    const endpointsToTry = [`${API_BASE}/donations/ai-analyze`];
+    if (!API_BASE.includes('resqplate-jbdy.onrender.com')) {
+      endpointsToTry.push('https://resqplate-jbdy.onrender.com/api/donations/ai-analyze');
+    }
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s threshold
+    let lastErrorMsg = 'Network request failed';
 
-      const res = await fetch(`${API_BASE}/donations/ai-analyze`, { 
-        method: 'POST',
-        body: formData,
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
+    for (const endpoint of endpointsToTry) {
+      console.log(`[AI DEBUG] Sending image request to: ${endpoint}`);
+      try {
+        const formData = new FormData();
+        formData.append('image', file);
 
-      if (res.ok) {
-        const data = await res.json();
-        
-        if (data.status === 'LOW_CONFIDENCE') {
-          return {
-            isValidFood: false,
-            status: 'LOW_CONFIDENCE',
-            detectedObject: data.detectedObject || 'Uncertain Subject',
-            confidenceScore: data.confidenceScore || 40,
-            reason: data.reason || 'Food presence could not be identified with sufficient confidence.'
-          };
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 45000); // 45s threshold for cold starts
+
+        const res = await fetch(endpoint, { 
+          method: 'POST',
+          body: formData,
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        console.log(`[AI DEBUG] Endpoint ${endpoint} returned HTTP status: ${res.status}`);
+
+        if (res.ok) {
+          const data = await res.json();
+          console.log('[AI DEBUG] Response payload structure:', { status: data.status, isValidFood: data.isValidFood, foodName: data.foodName });
+          
+          if (data.status === 'LOW_CONFIDENCE') {
+            return {
+              isValidFood: false,
+              status: 'LOW_CONFIDENCE',
+              detectedObject: data.detectedObject || 'Uncertain Subject',
+              confidenceScore: data.confidenceScore || 40,
+              reason: data.reason || 'Food presence could not be identified with sufficient confidence.'
+            };
+          }
+
+          // Hard Gate Check: Non-Food Rejection
+          if (data.isValidFood === false || data.status === 'REJECTED_NON_FOOD') {
+            console.log('🛑 [CLIENT GATE] Non-Food Image Rejected by AI:', data);
+            return {
+              isValidFood: false,
+              status: 'REJECTED_NON_FOOD',
+              detectedObject: data.detectedObject || 'Non-Food Item',
+              confidenceScore: data.confidenceScore || 95,
+              reason: data.reason || 'The uploaded image does not appear to contain recognizable food.'
+            };
+          }
+
+          // Approved Valid Food
+          if (data.isValidFood === true || data.status === 'VALID_FOOD') {
+            console.log('🟢 [CLIENT GATE] Valid Food Approved:', data);
+            return {
+              isValidFood: true,
+              status: 'VALID_FOOD',
+              detectedObject: data.foodName || data.detectedObject || 'Food Item',
+              foodType: data.foodName || 'Food Item',
+              freshnessScore: typeof data.freshnessScore === 'number' ? data.freshnessScore : 90,
+              confidenceScore: data.confidenceScore || 95,
+              shelfLifeHours: data.shelfLifeHours || 4,
+              visualIndicators: data.visualIndicators || ["Normal visual appearance", "No obvious spoilage visible"],
+              limitations: data.limitations || ["Visual analysis cannot confirm microbiological safety."]
+            };
+          }
+        } else {
+          lastErrorMsg = `HTTP Status ${res.status}`;
         }
-
-        // Hard Gate Check: Non-Food Rejection
-        if (data.isValidFood === false || data.status === 'REJECTED_NON_FOOD') {
-          console.log('🛑 [CLIENT GATE] Non-Food Image Rejected by AI:', data);
-          return {
-            isValidFood: false,
-            status: 'REJECTED_NON_FOOD',
-            detectedObject: data.detectedObject || 'Non-Food Item',
-            confidenceScore: data.confidenceScore || 95,
-            reason: data.reason || 'The uploaded image does not appear to contain recognizable food.'
-          };
-        }
-
-        // Approved Valid Food
-        if (data.isValidFood === true || data.status === 'VALID_FOOD') {
-          console.log('🟢 [CLIENT GATE] Valid Food Approved:', data);
-          return {
-            isValidFood: true,
-            status: 'VALID_FOOD',
-            detectedObject: data.foodName || data.detectedObject || 'Surplus Meal',
-            foodType: data.foodName || 'Surplus Meal',
-            freshnessScore: typeof data.freshnessScore === 'number' ? data.freshnessScore : 90,
-            confidenceScore: data.confidenceScore || 95,
-            shelfLifeHours: data.shelfLifeHours || 4,
-            visualIndicators: data.visualIndicators || ["Normal visual appearance", "No obvious spoilage visible"],
-            limitations: data.limitations || ["Visual analysis cannot confirm microbiological safety."]
-          };
-        }
+      } catch (err: any) {
+        lastErrorMsg = err.message || 'Network error';
+        console.warn(`⚠️ [AI DEBUG] Attempt to ${endpoint} failed:`, lastErrorMsg);
       }
-    } catch (err: any) {
-      console.warn('⚠️ [AI DEBUG] Backend API request failed or timed out:', err.message);
     }
 
     // 🛑 STRICT REJECTION ON ERROR: Never fabricate food for an image
