@@ -183,7 +183,7 @@ export const ResQApi = {
           const url = URL.createObjectURL(file);
           img.onload = () => {
             URL.revokeObjectURL(url);
-            const MAX_DIM = 1280;
+            const MAX_DIM = 1024;
             let width = img.width;
             let height = img.height;
             if (width > MAX_DIM || height > MAX_DIM) {
@@ -205,11 +205,11 @@ export const ResQApi = {
               (blob) => {
                 if (!blob) return resolve(file);
                 const comp = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), { type: 'image/jpeg' });
-                console.log(`[AI PERF] Preprocessing complete: ${origSizeKb}KB -> ${Math.round(comp.size / 1024)}KB in ${Date.now() - compStart}ms (${width}x${height}px)`);
+                console.log(`[AI PERF] Fast preprocessing complete: ${origSizeKb}KB -> ${Math.round(comp.size / 1024)}KB in ${Date.now() - compStart}ms (${width}x${height}px)`);
                 resolve(comp);
               },
               'image/jpeg',
-              0.80
+              0.75
             );
           };
           img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };

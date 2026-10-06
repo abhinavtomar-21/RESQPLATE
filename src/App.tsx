@@ -46,6 +46,9 @@ function AppContent() {
   const path = window.location.pathname;
   
   React.useEffect(() => {
+    // Silent background warmup call to wake Render API engine container
+    fetch('https://resqplate-jbdy.onrender.com/api/health').catch(() => {});
+
     if (path.includes('/backend-health') || path === '/backend-health') {
       setView('health');
     } else if (path.includes('/demo') || path === '/demo') {
